@@ -3,27 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retro Space Attack: Final</title>
+    <title>Retro Space Attack: Final Edition</title>
     <style>
         body { background: #000; color: #0f0; font-family: 'Courier New', monospace; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
         #game-container { position: relative; }
-        canvas { border: 4px solid #333; background: #000; box-shadow: 0 0 30px rgba(0, 255, 0, 0.1); image-rendering: pixelated; }
+        canvas { border: 4px solid #333; background: #000; box-shadow: 0 0 30px rgba(0, 255, 0, 0.2); image-rendering: pixelated; }
         .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         .hidden { display: none; }
-        button { background: #0f0; color: #000; border: none; padding: 15px 30px; font-family: inherit; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        .stats { position: absolute; top: 10px; width: 100%; text-align: center; }
+        button { background: #0f0; color: #000; border: none; padding: 15px 30px; font-family: inherit; font-weight: bold; cursor: pointer; margin-top: 20px; box-shadow: 4px 4px #050; }
+        button:active { transform: translate(2px, 2px); box-shadow: none; }
+        .stats { position: absolute; top: 10px; width: 100%; text-align: center; font-size: 1.2rem; text-shadow: 2px 2px #000; }
     </style>
 </head>
 <body>
 
     <div id="game-container">
-        <div class="stats">Score: <span id="scoreVal">0</span></div>
+        <div class="stats">SCORE: <span id="scoreVal">0</span></div>
         <canvas id="gameCanvas"></canvas>
 
         <div id="menuScreen" class="overlay">
-            <h1>SPACE ATTACK</h1>
+            <h1 style="color: #fff; text-shadow: 4px 4px #f0f;">SPACE ATTACK</h1>
             <p>Arrows to Move | Space to Shoot</p>
-            <button onclick="startGame()">START MISSION</button>
+            <button onclick="startGame()">INITIATE MISSION</button>
         </div>
 
         <div id="endScreen" class="overlay hidden">
@@ -42,35 +43,60 @@
     canvas.width = 600;
     canvas.height = 450;
 
+    // --- AUDIO ENGINE ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-    function playSound(freq, sweep, type, vol) {
+    
+    function playSound(freq, sweep, type, vol, duration = 0.1) {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = type;
         osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        if(sweep) osc.frequency.exponentialRampToValueAtTime(sweep, audioCtx.currentTime + 0.1);
+        if(sweep) osc.frequency.exponentialRampToValueAtTime(sweep, audioCtx.currentTime + duration);
         gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.1);
+        gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
         osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-    // --- DRAWING THE SHIPS ---
+    // Music Loop
+    let musicTick = 0;
+    function playMusic() {
+        if (!gameActive) return;
+        const notes = [110, 123, 110, 146]; // A, B, A, D bassline
+        if (musicTick % 20 === 0) {
+            playSound(notes[(musicTick/20) % 4], 50, 'square', 0.03, 0.15);
+        }
+        musicTick++;
+    }
+
+    // --- STARS BACKGROUND ---
+    let stars = [];
+    for(let i=0; i<100; i++) {
+        stars.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, size: Math.random()*2, speed: Math.random()*2 + 0.5 });
+    }
+
+    function drawStars() {
+        ctx.fillStyle = "#fff";
+        stars.forEach(s => {
+            ctx.fillRect(s.x, s.y, s.size, s.size);
+            s.y += s.speed;
+            if(s.y > canvas.height) s.y = 0;
+        });
+    }
+
+    // --- SHIP DRAWING ---
     function drawEnemyShip(x, y, color) {
         ctx.fillStyle = color;
-        // Simple pixel-art style ship
-        ctx.fillRect(x + 10, y, 10, 5);       // Top
-        ctx.fillRect(x + 5, y + 5, 20, 5);    // Mid
-        ctx.fillRect(x, y + 10, 30, 5);       // Bottom
-        ctx.fillRect(x, y + 15, 5, 5);        // Left "leg"
-        ctx.fillRect(x + 25, y + 15, 5, 5);   // Right "leg"
+        ctx.fillRect(x + 10, y, 10, 5);
+        ctx.fillRect(x + 5, y + 5, 20, 5);
+        ctx.fillRect(x, y + 10, 30, 5);
+        ctx.fillRect(x, y + 15, 5, 5); ctx.fillRect(x + 25, y + 15, 5, 5);
     }
 
     function drawPlayerShip(x, y) {
         ctx.fillStyle = '#0f0';
-        ctx.fillRect(x + 15, y, 10, 5);       // Cannon
-        ctx.fillRect(x, y + 5, 40, 10);       // Body
+        ctx.fillRect(x + 15, y, 10, 5);
+        ctx.fillRect(x, y + 5, 40, 10);
     }
 
     let score, gameActive, enemies, pBullets, eBullets, player, enemyDir, enemySpeed, particles;
@@ -78,20 +104,15 @@
 
     function startGame() {
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        score = 0;
-        gameActive = true;
-        enemyDir = 1;
-        enemySpeed = 1.2;
+        score = 0; gameActive = true; enemyDir = 1; enemySpeed = 1.2;
         pBullets = []; eBullets = []; enemies = []; particles = [];
         player = { x: 280, y: 400, w: 40, h: 15 };
         scoreVal.innerText = score;
-        
         for(let i = 0; i < 8; i++) {
             for(let j = 0; j < 3; j++) {
                 enemies.push({ x: i * 60 + 50, y: j * 40 + 50, w: 30, h: 20, alive: true });
             }
         }
-        
         menuScreen.classList.add('hidden');
         endScreen.classList.add('hidden');
         loop();
@@ -100,7 +121,7 @@
     window.addEventListener('keydown', e => {
         if(e.code === 'Space' && !keys['Space'] && gameActive) {
             pBullets.push({ x: player.x + player.w/2 - 2, y: player.y, w: 4, h: 10 });
-            playSound(800, 100, 'square', 0.05);
+            playSound(600, 150, 'triangle', 0.08); // Laser sound
         }
         keys[e.code] = true;
     });
@@ -108,12 +129,16 @@
 
     function loop() {
         if (!gameActive) return;
+        update();
+        draw();
+        playMusic();
+        requestAnimationFrame(loop);
+    }
 
-        // Player Move
+    function update() {
         if (keys['ArrowLeft'] && player.x > 0) player.x -= 5;
         if (keys['ArrowRight'] && player.x < canvas.width - player.w) player.x += 5;
 
-        // Enemy Move
         let hitEdge = false;
         enemies.forEach(e => {
             if (!e.alive) return;
@@ -123,30 +148,26 @@
         if (hitEdge) { 
             enemyDir *= -1; 
             enemies.forEach(e => e.y += 15); 
-            enemySpeed += 0.1; // Get faster!
+            enemySpeed += 0.05;
         }
 
-        // Enemy Shooting Logic
-        if (Math.random() < 0.015) {
+        if (Math.random() < 0.02) {
             const shooters = enemies.filter(e => e.alive);
             if (shooters.length > 0) {
                 const s = shooters[Math.floor(Math.random() * shooters.length)];
                 eBullets.push({ x: s.x + 15, y: s.y + 20, w: 4, h: 10 });
+                playSound(200, 400, 'sawtooth', 0.03); // Enemy shoot sound
             }
         }
 
-        // Update Bullets (Filter removes them when off-screen automatically)
         pBullets = pBullets.filter(b => {
             b.y -= 7;
             let hit = false;
             enemies.forEach(e => {
                 if (e.alive && b.x < e.x + e.w && b.x + b.w > e.x && b.y < e.y + e.h && b.y + b.h > e.y) {
-                    e.alive = false;
-                    hit = true;
-                    score += 10;
-                    scoreVal.innerText = score;
-                    playSound(100, 10, 'sawtooth', 0.1);
-                    for(let k=0; k<5; k++) particles.push({x: e.x+15, y: e.y+10, vx: Math.random()*4-2, vy: Math.random()*4-2, life: 1});
+                    e.alive = false; hit = true; score += 10; scoreVal.innerText = score;
+                    playSound(80, 10, 'sawtooth', 0.1, 0.2); // Explosion
+                    for(let k=0; k<8; k++) particles.push({x: e.x+15, y: e.y+10, vx: Math.random()*4-2, vy: Math.random()*4-2, life: 1, color: '#f0f'});
                 }
             });
             return b.y > 0 && !hit;
@@ -154,37 +175,36 @@
 
         eBullets = eBullets.filter(b => {
             b.y += 4;
-            // Check if Hit Player
             if (b.x < player.x + player.w && b.x + b.w > player.x && b.y < player.y + player.h && b.y + b.h > player.y) {
                 gameActive = false;
                 endScreen.classList.remove('hidden');
-                document.getElementById('endTitle').innerText = "PLAYER DESTROYED";
-                playSound(50, 5, 'sawtooth', 0.3);
+                document.getElementById('endTitle').innerText = "SYSTEM FAILURE";
+                document.getElementById('endTitle').style.color = "#f00";
+                playSound(40, 5, 'sawtooth', 0.4, 0.5);
             }
             return b.y < canvas.height;
         });
 
-        // Win Condition
         if (enemies.length > 0 && enemies.every(e => !e.alive)) {
             gameActive = false;
             endScreen.classList.remove('hidden');
-            document.getElementById('endTitle').innerText = "SYSTEMS CLEAR: VICTORY";
+            document.getElementById('endTitle').innerText = "GALAXY SECURED";
+            document.getElementById('endTitle').style.color = "#0f0";
         }
 
-        // Particles
-        particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life -= 0.02; });
+        particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life -= 0.03; });
         particles = particles.filter(p => p.life > 0);
+    }
 
-        // Draw
+    function draw() {
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawStars();
         drawPlayerShip(player.x, player.y);
         enemies.forEach(e => { if(e.alive) drawEnemyShip(e.x, e.y, '#f0f'); });
         ctx.fillStyle = '#fff'; pBullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
         ctx.fillStyle = '#f00'; eBullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
-        particles.forEach(p => { ctx.fillStyle = `rgba(255,255,255,${p.life})`; ctx.fillRect(p.x, p.y, 2, 2); });
-
-        requestAnimationFrame(loop);
+        particles.forEach(p => { ctx.fillStyle = `rgba(255, 100, 255, ${p.life})`; ctx.fillRect(p.x, p.y, 2, 2); });
     }
 </script>
 </body>
