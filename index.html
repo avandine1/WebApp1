@@ -3,48 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cyberpunk Defender</title>
+    <title>Cyberpunk City Defender</title>
     <style>
-        :root { --cy-pink: #ff00ff; --cy-blue: #00f7ff; --cy-green: #39ff14; --cy-purple: #6a00ff; --bg: #0a0014; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: #fff; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; touch-action: none; display: flex; flex-direction: column; height: 100vh; }
+        :root { --neon-pink: #ff00ff; --neon-blue: #00ffff; --neon-green: #39ff14; --bg: #050010; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body { background: var(--bg); color: #fff; font-family: 'Courier New', monospace; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        #stats-bar { height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--cy-blue); font-size: 1.2rem; text-shadow: 0 0 5px var(--cy-blue); }
-        #game-container { flex-grow: 1; position: relative; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; }
-        /* Added a cyberpunk gradient background to the canvas container */
-        canvas { max-width: 100%; max-height: 100%; image-rendering: pixelated; border-bottom: 2px solid var(--cy-purple); background: linear-gradient(to bottom, #120024 0%, #2a003b 70%, #420058 100%); }
+        #stats-bar { height: 50px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--neon-blue); font-size: 1.4rem; text-shadow: 0 0 10px var(--neon-blue); border-bottom: 1px solid #222; }
+        #game-viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; }
+        canvas { max-width: 100%; max-height: 100%; image-rendering: pixelated; background: linear-gradient(to bottom, #050010 0%, #1a0033 100%); }
 
-        #ui-layer { height: 140px; background: #05000a; display: flex; justify-content: space-around; align-items: center; border-top: 2px solid var(--cy-blue); padding: 10px; }
-        .btn { width: 75px; height: 75px; background: rgba(0, 247, 255, 0.1); border: 3px solid var(--cy-blue); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; user-select: none; color: var(--cy-blue); box-shadow: 0 0 10px rgba(0, 247, 255, 0.2); }
-        .btn:active { background: var(--cy-blue); color: #000; }
-        #btnFire { border-color: var(--cy-pink); color: var(--cy-pink); width: 100px; height: 100px; border-radius: 50%; font-size: 1.1rem; font-weight: bold; box-shadow: 0 0 15px rgba(255, 0, 255, 0.3); }
-        #btnFire:active { background: var(--cy-pink); color: #000; }
+        #controls { height: 140px; background: #0a001a; display: flex; justify-content: space-around; align-items: center; border-top: 3px solid var(--neon-blue); padding: 10px; z-index: 50; }
+        .btn { width: 75px; height: 75px; background: rgba(0, 255, 255, 0.1); border: 2px solid var(--neon-pink); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--neon-pink); }
+        .btn:active { background: var(--neon-pink); color: #000; box-shadow: 0 0 15px var(--neon-pink); }
+        #btnFire { border-color: var(--neon-blue); color: var(--neon-blue); width: 100px; height: 100px; border-radius: 50%; font-weight: bold; font-size: 1rem; }
 
-        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10,0,20,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; text-align: center; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; text-align: center; }
         .hidden { display: none !important; }
-        button.big-btn { background: var(--cy-purple); color: #fff; border: 2px solid var(--cy-blue); padding: 20px 40px; font-size: 1.5rem; font-weight: bold; cursor: pointer; border-radius: 5px; box-shadow: 0 0 20px var(--cy-purple); text-shadow: 0 0 5px #fff; }
+        button.play-btn { background: var(--neon-blue); color: #000; border: none; padding: 20px 50px; font-size: 1.5rem; font-weight: bold; cursor: pointer; border-radius: 5px; box-shadow: 0 0 20px var(--neon-blue); }
     </style>
 </head>
 <body>
 
     <div id="stats-bar">SCORE: <span id="scoreVal">0</span></div>
 
-    <div id="game-container">
+    <div id="game-viewport">
         <canvas id="gameCanvas"></canvas>
 
         <div id="menuScreen" class="overlay">
-            <h1 style="color: var(--cy-blue); font-size: 2.5rem; text-shadow: 0 0 15px var(--cy-purple);">CYBERPUNK DEFENDER</h1>
-            <p style="margin-bottom: 30px; opacity: 0.9; color: var(--cy-pink);">TARGET: CLASSIC UFOs</p>
-            <button class="big-btn" id="start-btn">ENGAGE SYSTEMS</button>
+            <h1 style="color: var(--neon-pink); font-size: 2.5rem; text-shadow: 0 0 15px var(--neon-pink); margin-bottom: 10px;">CITY DEFENDER</h1>
+            <p style="color: var(--neon-blue); margin-bottom: 30px;">NEON PROTOCOL ACTIVE</p>
+            <button class="play-btn" id="start-btn">ENGAGE SYSTEMS</button>
         </div>
 
         <div id="endScreen" class="overlay hidden">
-            <h1 id="endTitle" style="font-size: 2.5rem; color: var(--cy-pink); text-shadow: 0 0 10px red;">CRITICAL FAILURE</h1>
-            <button class="big-btn" id="retry-btn">REBOOT</button>
+            <h1 id="endTitle" style="font-size: 2.5rem; color: var(--neon-pink);">SYSTEM CRITICAL</h1>
+            <button class="play-btn" id="retry-btn">REBOOT</button>
         </div>
     </div>
 
-    <div id="ui-layer">
+    <div id="controls">
         <div class="btn" id="btnLeft">←</div>
         <div class="btn" id="btnFire">FIRE</div>
         <div class="btn" id="btnRight">→</div>
@@ -54,14 +52,14 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const scoreVal = document.getElementById('scoreVal');
-    canvas.width = 600; canvas.height = 750;
+    canvas.width = 600; canvas.height = 800;
 
-    // --- AUDIO (Unchanged) ---
     let audioCtx;
     function initAudio() {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') audioCtx.resume();
     }
+
     function playSynth(freq, vol, type, duration, sweep) {
         if(!audioCtx || audioCtx.state !== 'running') return;
         const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
@@ -72,218 +70,177 @@
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
+
+    // --- NON-REPETITIVE SYNTHWAVE ---
     let musicTick = 0;
+    const bassline = [55, 55, 55, 55, 43, 43, 43, 43, 48, 48, 48, 48, 41, 41, 41, 41]; // A -> F -> G -> E
     const melody = [329, 0, 329, 392, 440, 0, 440, 392, 349, 0, 349, 329, 293, 0, 261, 293];
-    const bassProgression = [55, 43, 48, 41];
+
     function synthMusicLoop() {
         if (!gameActive) return;
         if (musicTick % 10 === 0) {
-            let beat = (musicTick / 10) % 64; let noteIdx = beat % 16; let progIdx = Math.floor(beat / 16);
-            if(noteIdx % 4 === 0) playSynth(60, 0.12, 'sine', 0.1, 20);
-            playSynth(bassProgression[progIdx], 0.06, 'sawtooth', 0.2);
-            if(melody[noteIdx] > 0 && beat < 32) playSynth(melody[noteIdx], 0.02, 'triangle', 0.4);
+            let beat = (musicTick / 10) % 64;
+            let bar = Math.floor(beat / 16);
+            let note = beat % 16;
+            // Kick & Bass
+            if (note % 4 === 0) playSynth(bassline[bar], 0.1, 'sawtooth', 0.15);
+            // Melody (Only in Bars 1 & 3 for variety)
+            if ((bar === 0 || bar === 2) && melody[note] > 0) {
+                playSynth(melody[note], 0.02, 'triangle', 0.4);
+            }
         }
         musicTick++;
     }
 
-    // --- NEW HIGH-RES PIXEL ART GRAPHICS ---
-
-    // Helper for pixel drawing
-    function drawPix(x, y, w, h, color) { ctx.fillStyle = color; ctx.fillRect(Math.round(x), Math.round(y), w, h); }
-
+    // --- 16-BIT ASSET DRAWING ---
     function drawUFO(x, y) {
-        const tick = Math.floor(musicTick / 5) % 4;
+        // Classic Silver Saucer
+        let grad = ctx.createLinearGradient(x, y, x, y+20);
+        grad.addColorStop(0, '#aaa'); grad.addColorStop(0.5, '#eee'); grad.addColorStop(1, '#666');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.ellipse(x+15, y+15, 20, 8, 0, 0, Math.PI*2); ctx.fill();
         // Green Dome
-        drawPix(x+10, y, 16, 8, '#39ff14'); // Neon Green
-        drawPix(x+12, y+2, 12, 4, '#ccffcc'); // Highlight
-        // Classic Saucer Body (Silver/Grey)
-        drawPix(x+4, y+8, 28, 6, '#888');
-        drawPix(x, y+12, 36, 8, '#aaa');
-        drawPix(x+2, y+18, 32, 4, '#666'); // Shadow
-        // Rotating Lights (Cyan/Pink)
-        const l1 = tick === 0 ? '#00f7ff' : '#444';
-        const l2 = tick === 1 ? '#ff00ff' : '#444';
-        const l3 = tick === 2 ? '#00f7ff' : '#444';
-        const l4 = tick === 3 ? '#ff00ff' : '#444';
-        drawPix(x+4, y+14, 4, 4, l1); drawPix(x+12, y+14, 4, 4, l2);
-        drawPix(x+20, y+14, 4, 4, l3); drawPix(x+28, y+14, 4, 4, l4);
+        ctx.fillStyle = 'rgba(57, 255, 20, 0.7)';
+        ctx.beginPath(); ctx.arc(x+15, y+10, 8, Math.PI, 0); ctx.fill();
+        // Rotating Rim Lights
+        let lColor = (musicTick % 20 < 10) ? '#00ffff' : '#ff00ff';
+        ctx.fillStyle = lColor; ctx.fillRect(x+2, y+14, 4, 3); ctx.fillRect(x+24, y+14, 4, 3);
     }
 
-    function drawCyberCity() {
-        ctx.fillStyle = '#1a002a'; // Darker cyberpunk base
-        // Buildings with neon accents
-        const buildings = [
-            {x:0, w:50, h:180, pattern:'circuit'}, {x:60, w:80, h:220, pattern:'stripes'}, 
-            {x:150, w:40, h:150, pattern:'windows'}, {x:200, w:100, h:250, pattern:'circuit'},
-            {x:310, w:60, h:190, pattern:'stripes'}, {x:380, w:90, h:210, pattern:'windows'},
-            {x:480, w:50, h:170, pattern:'circuit'}, {x:540, w:60, h:200, pattern:'stripes'}
-        ];
-
-        buildings.forEach(b => {
-            let y = canvas.height - b.h;
-            ctx.fillStyle = '#0d0015'; ctx.fillRect(b.x, y, b.w, b.h); // Base
-            ctx.strokeStyle = '#4a00e0'; ctx.lineWidth = 2; ctx.strokeRect(b.x+2, y+2, b.w-4, b.h-4); // Purple Outline
-            
-            // Neon Patterns
-            if(b.pattern === 'circuit') {
-                ctx.fillStyle = '#00f7ff';
-                for(let i=y+20; i<canvas.height; i+=30) drawPix(b.x+10, i, b.w-20, 2, '#00f7ff');
-                drawPix(b.x+b.w/2, y+10, 2, b.h-20, '#4a00e0');
-            } else if (b.pattern === 'stripes') {
-                 ctx.fillStyle = '#ff00ff';
-                 for(let i=y+15; i<canvas.height; i+=25) drawPix(b.x+5, i, 5, 15, '#ff00ff');
-            } else {
-                for(let i=b.x+10; i<b.x+b.w-10; i+=15) for(let j=y+20; j<canvas.height; j+=25) drawPix(i, j, 8, 12, (j%50===0 ? '#39ff14' : '#220033'));
+    function drawCity() {
+        ctx.fillStyle = '#0a0015'; // Darker base
+        for(let i=0; i<canvas.width; i+=50) {
+            let h = 80 + Math.sin(i) * 30;
+            ctx.fillRect(i, canvas.height - h, 45, h);
+            // Neon windows
+            if(i % 100 === 0) {
+                ctx.fillStyle = '#330044'; ctx.fillRect(i+10, canvas.height-h+20, 10, 10);
             }
-        });
-
-        // Hanging Wires
-        ctx.beginPath(); ctx.moveTo(0, 550); ctx.bezierCurveTo(150, 600, 450, 580, 600, 620);
-        ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, 560); ctx.bezierCurveTo(150, 610, 450, 590, 600, 630);
-        ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.stroke();
-
-        // Haze
-        ctx.fillStyle = 'rgba(106, 0, 255, 0.1)'; ctx.fillRect(0, canvas.height-100, 600, 100);
+        }
+        // Red Ground Fire Glow
+        ctx.fillStyle = 'rgba(255, 69, 0, 0.2)';
+        ctx.fillRect(0, canvas.height-20, canvas.width, 20);
     }
 
-    function drawPlayerHighRes(x, y, trail) {
-        // --- Cyan Thruster Trail (with gap) ---
+    function drawPlayer(x, y, trail) {
+        // Trail with gap
         trail.forEach((t, i) => {
-            const width = 30 - i*2; const alpha = (1 - i/15) * 0.6;
-            const trailY = t.y + 45; // Offset below ship
-            // Core
-            drawPix(t.x + 25 - width/2, trailY, width, 6, `rgba(200, 255, 255, ${alpha})`);
-            // Outer glow
-            drawPix(t.x + 25 - width/2 - 4, trailY-2, width+8, 10, `rgba(0, 247, 255, ${alpha*0.5})`);
+            let alpha = i / 10 * 0.4;
+            ctx.fillStyle = `rgba(0, 255, 255, ${alpha})`;
+            ctx.fillRect(t.x + 10, t.y + 45, 20, 5); // Exhaust cloud
         });
-
-        // --- High-Res Cyberpunk Jet ---
-        const cx = x + 25; // Center X relative to position
-        // Main Body (Dark Purple/Blue)
-        drawPix(cx-10, y, 20, 40, '#2a005e'); 
-        drawPix(cx-15, y+15, 30, 30, '#3a007e');
-        // Wings (Swept forward look)
-        drawPix(cx-30, y+25, 15, 25, '#4a009e'); drawPix(cx+15, y+25, 15, 25, '#4a009e');
-        drawPix(cx-35, y+35, 5, 15, '#2a005e'); drawPix(cx+30, y+35, 5, 15, '#2a005e');
-        // Cockpit (Cyan)
-        drawPix(cx-5, y+10, 10, 15, '#00f7ff'); drawPix(cx-3, y+12, 6, 8, '#ccffff');
-        // Highlights & Armor Plating (Neon Blue/Purple lines)
-        drawPix(cx-10, y+5, 2, 35, '#00f7ff'); drawPix(cx+8, y+5, 2, 35, '#00f7ff'); // Body lines
-        drawPix(cx-28, y+25, 2, 25, '#ff00ff'); drawPix(cx+26, y+25, 2, 25, '#ff00ff'); // Wing edge
-        // Engine Nozzles
-        drawPix(cx-12, y+45, 8, 4, '#111'); drawPix(cx+4, y+45, 8, 4, '#111');
-        drawPix(cx-10, y+47, 4, 3, '#00f7ff'); drawPix(cx+6, y+47, 4, 3, '#00f7ff'); // Glow source
+        // 16-bit Jet Interceptor
+        ctx.fillStyle = '#111'; // Shadow
+        ctx.beginPath(); ctx.moveTo(x+20, y); ctx.lineTo(x, y+40); ctx.lineTo(x+40, y+40); ctx.fill();
+        ctx.fillStyle = '#222266'; // Body
+        ctx.beginPath(); ctx.moveTo(x+20, y+5); ctx.lineTo(x+5, y+35); ctx.lineTo(x+35, y+35); ctx.fill();
+        ctx.fillStyle = '#00ffff'; // Cockpit
+        ctx.fillRect(x+17, y+15, 6, 10);
+        // Engine Glow
+        ctx.fillStyle = '#ff00ff'; ctx.fillRect(x+8, y+35, 5, 5); ctx.fillRect(x+27, y+35, 5, 5);
     }
 
-    // --- ENGINE (Logic Mostly Unchanged) ---
-    let score, gameActive, player, enemies, pBullets, stars, enemyDir, enemySpeed, trail, canShoot=true;
+    // --- GAME ENGINE ---
+    let score, gameActive, player, enemies, pBullets, eBullets, stars, enemyDir, enemySpeed, trail, canShoot=true;
     const keys = {};
 
-    function setupGame() {
-        initAudio();
-        score = 0; gameActive = true; enemyDir = 1; enemySpeed = 1.3;
-        pBullets = []; enemies = []; trail = [];
-        player = { x: 275, y: 620, w: 50, h: 50 }; // Adjusted size for new sprite
-        stars = Array.from({length: 50}, () => ({x: Math.random()*600, y: Math.random()*750, s: Math.random()*2}));
-        for(let i=0; i<7; i++) for(let j=0; j<4; j++) enemies.push({x: i*75+50, y: j*55+60, w: 36, h: 22, alive: true});
-        
+    function setup() {
+        initAudio(); score = 0; gameActive = true; enemyDir = 1; enemySpeed = 1.3;
+        pBullets = []; eBullets = []; enemies = []; trail = [];
+        player = { x: 280, y: 650, w: 40, h: 40 };
+        stars = Array.from({length: 40}, () => ({x: Math.random()*600, y: Math.random()*800, s: Math.random()*3+1}));
+        for(let i=0; i<8; i++) for(let j=0; j<4; j++) enemies.push({x: i*65+45, y: j*50+60, w: 30, h: 20, alive: true});
         document.getElementById('menuScreen').classList.add('hidden');
         document.getElementById('endScreen').classList.add('hidden');
         loop();
     }
 
-    document.getElementById('start-btn').onclick = setupGame;
-    document.getElementById('retry-btn').onclick = setupGame;
+    document.getElementById('start-btn').onclick = setup;
+    document.getElementById('retry-btn').onclick = setup;
 
     function shoot() {
         if(!gameActive || !canShoot) return;
-        // Adjust bullet origin for new ship center
-        pBullets.push({ x: player.x+23, y: player.y });
-        playSynth(700, 0.15, 'square', 0.1, 200);
+        pBullets.push({ x: player.x+18, y: player.y });
+        playSynth(700, 0.1, 'square', 0.1, 200);
         canShoot = false;
     }
 
+    // Inputs
     const bind = (id, key) => {
         const el = document.getElementById(id);
         el.ontouchstart = (e) => { e.preventDefault(); keys[key]=true; if(id==='btnFire') shoot(); };
         el.ontouchend = () => { keys[key]=false; if(id==='btnFire') canShoot=true; };
     };
     bind('btnLeft', 'ArrowLeft'); bind('btnRight', 'ArrowRight'); bind('btnFire', 'Space');
-
     window.onkeydown = (e) => { if(e.code==='Space') shoot(); keys[e.code]=true; };
     window.onkeyup = (e) => { if(e.code==='Space') canShoot=true; keys[e.code]=false; };
 
-    function loop() {
-        if (!gameActive) return;
-        update(); draw(); synthMusicLoop();
-        requestAnimationFrame(loop);
-    }
+    function loop() { if (!gameActive) return; update(); draw(); synthMusicLoop(); requestAnimationFrame(loop); }
 
     function update() {
-        if (keys['ArrowLeft'] && player.x > 0) player.x -= 6;
-        if (keys['ArrowRight'] && player.x < 550) player.x += 6;
-
-        trail.push({x: player.x, y: player.y}); if(trail.length > 15) trail.shift(); // Longer trail
+        if (keys['ArrowLeft'] && player.x > 0) player.x -= 7;
+        if (keys['ArrowRight'] && player.x < 560) player.x += 7;
+        trail.push({x: player.x, y: player.y}); if(trail.length > 10) trail.shift();
 
         let edge = false;
         enemies.forEach(e => {
             if(!e.alive) return;
             e.x += enemyDir * enemySpeed;
-            if(e.x < 10 || e.x > 554) edge = true;
-            if(e.y > 600) gameOver("CITY BREACHED");
-            // Adjusted collision box for new sprites
-            if(e.x < player.x+45 && e.x+30 > player.x+5 && e.y < player.y+40 && e.y+18 > player.y+5) gameOver("SHIP DESTROYED");
+            if(e.x < 10 || e.x > 560) edge = true;
+            if(e.y > 640) gameOver("CITY OBLITERATED"); // Lose: Reach city
+            if(e.x < player.x+40 && e.x+30 > player.x && e.y < player.y+40 && e.y+20 > player.y) gameOver("PILOT KILLED"); // Lose: Touch ship
         });
-        if(edge) { enemyDir *= -1; enemies.forEach(e => e.y += 25); enemySpeed += 0.05; }
+        if(edge) { enemyDir *= -1; enemies.forEach(e => e.y += 20); enemySpeed += 0.04; }
+
+        // Green UFO Lasers
+        if(Math.random() < 0.02) {
+            let s = enemies.filter(e => e.alive);
+            if(s.length) {
+                let u = s[Math.floor(Math.random()*s.length)];
+                eBullets.push({x: u.x+15, y: u.y+20});
+                playSynth(200, 0.03, 'sawtooth', 0.1);
+            }
+        }
 
         pBullets = pBullets.filter(b => {
             b.y -= 12;
             let hit = false;
             enemies.forEach(e => {
-                // Adjusted collision for UFO shape
-                if(e.alive && b.x > e.x && b.x < e.x+36 && b.y > e.y && b.y < e.y+22) {
-                    e.alive = false; hit = true; score += 100; scoreVal.innerText = score;
-                    playSynth(80, 0.3, 'sawtooth', 0.4, 30);
+                if(e.alive && b.x > e.x && b.x < e.x+30 && b.y > e.y && b.y < e.y+20) {
+                    e.alive = false; hit = true; score += 10; scoreVal.innerText = score;
+                    playSynth(100, 0.2, 'sawtooth', 0.3, 20); // Boom
                 }
             });
             return b.y > 0 && !hit;
         });
 
-        stars.forEach(s => { s.y += s.s; if(s.y > 750) s.y = 0; });
-        if (enemies.every(e => !e.alive)) gameOver("WAVE COMPLETE");
+        eBullets = eBullets.filter(b => {
+            b.y += 6;
+            if(b.x > player.x && b.x < player.x+40 && b.y > player.y && b.y < player.y+40) gameOver("SYSTEM FAILURE");
+            return b.y < 800;
+        });
+
+        stars.forEach(s => { s.y += s.s; if(s.y > 800) s.y = 0; });
+        if (enemies.every(e => !e.alive)) gameOver("GALAXY SECURED");
     }
 
     function gameOver(txt) {
         gameActive = false;
         document.getElementById('endScreen').classList.remove('hidden');
         document.getElementById('endTitle').innerText = txt;
-        playSynth(40, 0.5, 'sawtooth', 1, 10);
+        playSynth(40, 0.5, 'sawtooth', 1.5, 10);
     }
 
     function draw() {
-        ctx.clearRect(0,0,600,750);
-        // Stars
-        ctx.fillStyle = '#444'; stars.forEach(s => ctx.fillRect(s.x, s.y, s.s, s.s));
-        
-        drawCyberCity();
-        
-        // Player & Trail
-        drawPlayerHighRes(player.x, player.y, trail);
-        
-        // UFOs
+        ctx.fillStyle = '#050010'; ctx.fillRect(0,0,600,800);
+        ctx.fillStyle = '#222'; stars.forEach(s => ctx.fillRect(s.x, s.y, s.s, s.s));
+        drawCity();
+        drawPlayer(player.x, player.y, trail);
         enemies.forEach(e => { if(e.alive) drawUFO(e.x, e.y); });
-        
-        // Player Bullets (Blue/Purple)
-        pBullets.forEach(b => {
-             drawPix(b.x, b.y, 4, 12, '#00f7ff');
-             drawPix(b.x-1, b.y+2, 6, 10, 'rgba(106, 0, 255, 0.5)');
-        });
-
-        // Scanlines
-        ctx.fillStyle = 'rgba(0,0,0,0.15)';
-        for(let i=0; i<750; i+=3) ctx.fillRect(0, i, 600, 1);
+        ctx.fillStyle = '#fff'; pBullets.forEach(b => ctx.fillRect(b.x, b.y, 4, 15));
+        ctx.fillStyle = varColor('--neon-green'); eBullets.forEach(b => ctx.fillRect(b.x, b.y, 4, 15));
     }
+    function varColor(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
 </script>
 </body>
 </html>
