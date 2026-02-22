@@ -101,28 +101,26 @@
     }
 
     function drawCity() {
-        // Neon Sky Stars (Static background layer)
         ctx.fillStyle = "white";
         stars.forEach(s => {
-            ctx.globalAlpha = Math.random() * 0.5 + 0.5;
+            ctx.globalAlpha = 0.8;
             ctx.fillRect(s.x, s.y, s.size, s.size);
         });
         ctx.globalAlpha = 1.0;
 
-        // Silhouette Buildings with more detail
-        ctx.fillStyle = '#050010';
         const buildWidths = [60, 80, 50, 90, 70, 100, 60, 90];
         let curX = 0;
-        for(let w of buildWidths) {
-            let h = 120 + Math.sin(curX) * 30;
+        for(let i = 0; i < buildWidths.length; i++) {
+            let w = buildWidths[i];
+            let h = 120 + Math.sin(i) * 30;
             ctx.fillStyle = '#0a001a';
             ctx.fillRect(curX, 800 - h, w, h);
             
-            // Neon Windows
-            ctx.fillStyle = '#330033';
+            // Static Yellow Windows
             for(let row = 1; row < 5; row++) {
                 for(let col = 0; col < w/15; col++) {
-                    if(Math.random() > 0.95) ctx.fillStyle = '#ff00ff';
+                    // Use index-based logic for static placement instead of random
+                    if((i + row + col) % 3 === 0) ctx.fillStyle = '#ffff00';
                     else ctx.fillStyle = '#110022';
                     ctx.fillRect(curX + 5 + (col*15), 800 - h + (row*20), 8, 8);
                 }
@@ -130,7 +128,6 @@
             curX += w + 2;
         }
 
-        // Perspective Grid at bottom
         ctx.strokeStyle = '#ff00ff';
         ctx.lineWidth = 1;
         for(let i = 0; i < 10; i++) {
@@ -148,6 +145,38 @@
         ctx.fill();
     }
 
+    function drawPlayerShip(x, y) {
+        const w = 40;
+        const h = 35;
+        
+        // Outer Wings (Triangular)
+        ctx.fillStyle = '#004400';
+        ctx.beginPath();
+        ctx.moveTo(x + w/2, y); // Top
+        ctx.lineTo(x, y + h);   // Bottom Left
+        ctx.lineTo(x + w, y + h); // Bottom Right
+        ctx.closePath();
+        ctx.fill();
+
+        // Inner Hull
+        ctx.fillStyle = '#00ff00';
+        ctx.beginPath();
+        ctx.moveTo(x + w/2, y + 5);
+        ctx.lineTo(x + 8, y + h - 5);
+        ctx.lineTo(x + w - 8, y + h - 5);
+        ctx.closePath();
+        ctx.fill();
+
+        // Cockpit
+        ctx.fillStyle = '#00ffff';
+        ctx.beginPath();
+        ctx.moveTo(x + w/2, y + 8);
+        ctx.lineTo(x + w/2 - 4, y + 18);
+        ctx.lineTo(x + w/2 + 4, y + 18);
+        ctx.closePath();
+        ctx.fill();
+    }
+
     // --- GAME STATE ---
     let score, gameActive, player, enemies, pBullets, eBullets, explosions, stars, enemyDir, enemySpeed, trail, canShoot = true;
     const keys = {};
@@ -159,7 +188,6 @@
         player = { x: 280, y: 700, w: 40, h: 30 };
         scoreVal.innerText = score;
         
-        // Stars background
         stars = Array.from({length: 80}, () => ({
             x: Math.random() * 600, 
             y: Math.random() * 600, 
@@ -202,7 +230,6 @@
         if (keys['ArrowLeft'] && player.x > 0) player.x -= 7;
         if (keys['ArrowRight'] && player.x < 560) player.x += 7;
 
-        // Player trail
         trail.push({x: player.x, y: player.y});
         if(trail.length > 8) trail.shift();
 
@@ -213,14 +240,13 @@
             e.x += enemyDir * enemySpeed;
             if(e.x < 10 || e.x > 560) edge = true;
             
-            // Check if Enemy reaches bottom OR touches Player
             if(e.y > 720) gameOver("CITY OBLITERATED");
             if(e.x < player.x + player.w && e.x + e.w > player.x && e.y < player.y + player.h && e.y + e.h > player.y) {
                 gameOver("COLLISION DETECTED");
             }
 
-            // Random enemy shooting
-            if(Math.random() > 0.997) {
+            // REDUCED SHOOTING: Changed probability from 0.997 to 0.9997
+            if(Math.random() > 0.9997) {
                 eBullets.push({x: e.x + 15, y: e.y + 20});
                 playSynth(400, 0.05, 'triangle', 0.1, 100);
             }
@@ -232,7 +258,6 @@
             enemySpeed += 0.1; 
         }
 
-        // Update Bullets
         pBullets = pBullets.filter(b => {
             b.y -= 12;
             let hit = false;
@@ -246,7 +271,6 @@
             return b.y > 0 && !hit;
         });
 
-        // Update Enemy Bullets
         eBullets = eBullets.filter(eb => {
             eb.y += 5;
             if(eb.x > player.x && eb.x < player.x + player.w && eb.y > player.y && eb.y < player.y + player.h) {
@@ -256,7 +280,6 @@
             return eb.y < 800;
         });
 
-        // Update Explosions
         explosions.forEach(p => {
             p.x += p.vx; p.y += p.vy;
             p.life -= 0.04;
@@ -278,32 +301,29 @@
         ctx.clearRect(0, 0, 600, 800);
         drawCity();
         
-        // Player Trail
         trail.forEach((pos, i) => {
-            ctx.fillStyle = `rgba(0, 255, 255, ${i / 10 * 0.4})`;
-            ctx.fillRect(pos.x + 5, pos.y + 10, 30, 20);
+            ctx.fillStyle = `rgba(0, 255, 255, ${i / 10 * 0.2})`;
+            ctx.beginPath();
+            ctx.moveTo(pos.x + 20, pos.y);
+            ctx.lineTo(pos.x, pos.y + 30);
+            ctx.lineTo(pos.x + 40, pos.y + 30);
+            ctx.fill();
         });
 
-        // Player
-        ctx.fillStyle = '#00ff00';
-        ctx.fillRect(player.x + 15, player.y, 10, 10);
-        ctx.fillRect(player.x, player.y + 10, 40, 15);
+        drawPlayerShip(player.x, player.y);
 
-        // Enemies
         enemies.forEach(e => { if(e.alive) drawUFO(e.x, e.y); });
 
-        // Bullets
         ctx.fillStyle = '#00ffff';
         pBullets.forEach(b => ctx.fillRect(b.x, b.y, 4, 15));
         
-        ctx.fillStyle = '#39ff14'; // Neon Green Enemy Lasers
+        ctx.fillStyle = '#39ff14';
         eBullets.forEach(eb => {
             ctx.shadowBlur = 10; ctx.shadowColor = "#39ff14";
             ctx.fillRect(eb.x, eb.y, 3, 15);
             ctx.shadowBlur = 0;
         });
 
-        // Explosions
         explosions.forEach(p => {
             ctx.globalAlpha = p.life;
             drawExplosion(p);
@@ -311,7 +331,6 @@
         ctx.globalAlpha = 1.0;
     }
 
-    // Input Logic
     function shoot() {
         if(!gameActive || !canShoot) return;
         pBullets.push({ x: player.x+18, y: player.y });
