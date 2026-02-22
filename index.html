@@ -3,25 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Synthwave Ace</title>
+    <title>Synthwave: Ruined City</title>
     <style>
-        :root { --neon-pink: #ff00ff; --neon-blue: #00ffff; }
+        :root { --neon-pink: #ff00ff; --neon-blue: #00ffff; --fire: #ff4500; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: #050010; color: #fff; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; height: 100vh; }
+        body { background: #020005; color: #fff; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; touch-action: none; display: flex; flex-direction: column; align-items: center; height: 100vh; }
         
         #game-container { position: relative; width: 100%; flex-grow: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        canvas { background: #000; border-bottom: 2px solid var(--neon-blue); image-rendering: pixelated; width: 100%; height: auto; max-height: 60vh; }
+        canvas { background: linear-gradient(to bottom, #050010 0%, #1a0033 100%); width: 100%; height: auto; max-height: 75vh; image-rendering: pixelated; }
 
-        /* Mobile-First Controls */
-        #ui-layer { position: fixed; bottom: 0; width: 100%; height: 150px; background: rgba(10, 0, 30, 0.8); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #333; z-index: 20; padding: 10px; }
-        .btn { width: 80px; height: 80px; background: rgba(255,255,255,0.05); border: 3px solid var(--neon-pink); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 2rem; user-select: none; }
-        .btn:active { background: var(--neon-pink); color: #000; box-shadow: 0 0 20px var(--neon-pink); }
-        #btnFire { border-color: var(--neon-blue); width: 100px; height: 100px; border-radius: 50%; }
+        #ui-layer { position: fixed; bottom: 0; width: 100%; height: 120px; background: rgba(0,0,0,0.9); display: flex; justify-content: space-around; align-items: center; border-top: 2px solid #333; z-index: 20; }
+        .btn { width: 70px; height: 70px; background: rgba(255,255,255,0.05); border: 2px solid var(--neon-pink); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; user-select: none; }
+        .btn:active { background: var(--neon-pink); color: #000; }
+        #btnFire { border-color: var(--neon-blue); width: 90px; height: 90px; border-radius: 50%; font-size: 1.2rem; font-weight: bold; }
 
         .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; text-align: center; }
         .hidden { display: none !important; }
-        button#start-btn { background: var(--neon-blue); color: #000; border: none; padding: 25px 50px; font-size: 1.8rem; font-weight: bold; cursor: pointer; border-radius: 10px; }
-        .stats { position: fixed; top: 10px; font-size: 1.4rem; color: var(--neon-pink); z-index: 30; font-weight: bold; }
+        button.big-btn { background: var(--neon-blue); color: #000; border: none; padding: 20px 40px; font-size: 1.5rem; font-weight: bold; cursor: pointer; border-radius: 5px; box-shadow: 0 0 20px var(--neon-blue); }
+        .stats { position: fixed; top: 10px; font-size: 1.2rem; color: var(--neon-pink); z-index: 30; font-weight: bold; text-shadow: 2px 2px #000; }
     </style>
 </head>
 <body>
@@ -32,20 +31,20 @@
         <canvas id="gameCanvas"></canvas>
 
         <div id="menuScreen" class="overlay">
-            <h1 style="color: var(--neon-pink); font-size: 2.5rem; margin-bottom: 20px;">SYNTH ATTACK</h1>
-            <button id="start-btn">TAP TO START</button>
-            <p style="margin-top: 20px; font-size: 0.8rem; opacity: 0.7;">V1.4 MOBILE OPTIMIZED</p>
+            <h1 style="color: var(--neon-pink); font-size: 2.5rem; text-shadow: 0 0 10px var(--neon-pink);">CITY DEFENDER</h1>
+            <p style="margin-bottom: 20px; opacity: 0.8;">RESTORE THE GALAXY</p>
+            <button class="big-btn" id="start-btn">TAP TO UNMUTE & START</button>
         </div>
 
         <div id="endScreen" class="overlay hidden">
-            <h1 id="endTitle" style="font-size: 2.5rem;">GAME OVER</h1>
-            <button id="retry-btn" style="background:var(--neon-pink); padding: 15px 40px; border:none; color:#000; font-weight:bold; font-size: 1.2rem;">REBOOT</button>
+            <h1 id="endTitle" style="font-size: 2.5rem; color: var(--fire);">CITY DESTROYED</h1>
+            <button class="big-btn" id="retry-btn">REBOOT SYSTEM</button>
         </div>
     </div>
 
     <div id="ui-layer">
         <div class="btn" id="btnLeft">←</div>
-        <div class="btn" id="btnFire">🔥</div>
+        <div class="btn" id="btnFire">FIRE</div>
         <div class="btn" id="btnRight">→</div>
     </div>
 
@@ -54,18 +53,28 @@
     const ctx = canvas.getContext('2d');
     const scoreVal = document.getElementById('scoreVal');
     
-    canvas.width = 600; canvas.height = 700; // Taller for mobile
+    canvas.width = 600; canvas.height = 800;
 
+    // --- 16-BIT AUDIO FIX (SAFARI AGGRESSIVE) ---
     let audioCtx;
-    function initAudio() {
+    function unlockAudio() {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
+        // Play an immediate tiny silent note to unlock the hardware
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        gain.gain.value = 0.01;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(0);
+        osc.stop(0.1);
+        
         if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
     function playSynth(freq, vol, type, duration, sweep) {
-        if(!audioCtx) return;
+        if(!audioCtx || audioCtx.state !== 'running') return;
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = type;
@@ -77,86 +86,122 @@
         osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-    // --- SYNTHWAVE MUSIC (LONG MELODY) ---
+    // --- SYNTHWAVE MUSIC ---
     let musicTick = 0;
-    const melody = [329, 0, 329, 349, 392, 0, 392, 349, 329, 293, 261, 261, 293, 329, 329, 293]; 
-    const bass = [82, 82, 82, 82, 65, 65, 65, 65, 73, 73, 73, 73, 82, 82, 82, 82];
-
+    const melody = [329, 329, 392, 0, 440, 440, 392, 0, 349, 349, 329, 329, 293, 0, 293, 0];
     function synthMusicLoop() {
         if (!gameActive) return;
-        if (musicTick % 10 === 0) {
-            let idx = (musicTick / 10) % melody.length;
-            // Kick
-            if(idx % 4 === 0) playSynth(50, 0.15, 'sine', 0.1, 20);
-            // Bass
-            playSynth(bass[idx], 0.06, 'sawtooth', 0.2);
-            // Melody
-            if(melody[idx] > 0) playSynth(melody[idx], 0.03, 'triangle', 0.4);
+        if (musicTick % 12 === 0) {
+            let idx = (musicTick / 12) % melody.length;
+            if(idx % 4 === 0) playSynth(60, 0.1, 'sine', 0.1, 30); // Kick
+            playSynth(82, 0.05, 'sawtooth', 0.2); // Constant Bass
+            if(melody[idx] > 0) playSynth(melody[idx], 0.02, 'triangle', 0.5);
         }
         musicTick++;
     }
 
-    // --- DRAWING ---
-    function drawPlayer(x, y) {
-        ctx.fillStyle = '#0f0';
-        ctx.beginPath();
-        ctx.moveTo(x + 20, y); // Tip
-        ctx.lineTo(x, y + 30); // Left back
-        ctx.lineTo(x + 40, y + 30); // Right back
-        ctx.closePath();
-        ctx.fill();
-        // Thruster glow
-        ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
-        ctx.fillRect(x + 15, y + 30, 10, 5);
+    // --- 16-BIT GRAPHICS FUNCTIONS ---
+    function drawUFO(x, y) {
+        // Saucer Body
+        ctx.fillStyle = '#777';
+        ctx.fillRect(x, y + 10, 30, 8); // Base shading
+        ctx.fillStyle = '#AAA';
+        ctx.fillRect(x + 5, y + 8, 20, 6); // Top saucer
+        
+        // Cockpit Dome
+        ctx.fillStyle = 'rgba(0, 255, 255, 0.6)';
+        ctx.fillRect(x + 10, y + 2, 10, 6);
+        
+        // Glowing Lights
+        let glow = (Math.floor(Date.now() / 200) % 2 === 0) ? '#ff00ff' : '#00ffff';
+        ctx.fillStyle = glow;
+        ctx.fillRect(x + 5, y + 12, 4, 4);
+        ctx.fillRect(x + 21, y + 12, 4, 4);
     }
 
-    function drawEnemy(x, y) {
-        ctx.fillStyle = '#ff00ff';
+    function drawCity() {
+        ctx.fillStyle = '#0a001a';
+        // Silhouette buildings
+        const buildWidths = [40, 60, 30, 80, 50, 70];
+        let curX = 0;
         ctx.beginPath();
-        ctx.arc(x+15, y+10, 10, 0, Math.PI*2);
-        ctx.fill();
-        ctx.fillStyle = '#00ffff';
-        ctx.fillRect(x+5, y+8, 20, 4);
+        for(let w of buildWidths) {
+            let h = 80 + Math.sin(curX) * 20;
+            ctx.fillRect(curX, 800 - h, w, h);
+            // Window lights (randomly out)
+            ctx.fillStyle = '#440044';
+            if(Math.random() > 0.8) ctx.fillStyle = '#ff00ff';
+            ctx.fillRect(curX + 10, 800 - h + 20, 5, 5);
+            ctx.fillStyle = '#0a001a';
+            curX += w + 5;
+        }
+        // Red ground glow
+        ctx.fillStyle = 'rgba(255, 69, 0, 0.2)';
+        ctx.fillRect(0, 780, 600, 20);
     }
 
-    // --- GAME LOGIC ---
-    let score, gameActive, player, enemies, pBullets, stars, enemyDir, enemySpeed;
+    function drawPlayer(x, y, trail) {
+        // Draw Trail
+        trail.forEach((pos, i) => {
+            ctx.fillStyle = `rgba(0, 255, 255, ${i / 10 * 0.3})`;
+            ctx.beginPath();
+            ctx.moveTo(pos.x + 20, pos.y);
+            ctx.lineTo(pos.x + 5, pos.y + 25);
+            ctx.lineTo(pos.x + 35, pos.y + 25);
+            ctx.fill();
+        });
+
+        // 16-bit Ship
+        ctx.fillStyle = '#006600'; // Darker base
+        ctx.beginPath();
+        ctx.moveTo(x + 20, y); ctx.lineTo(x, y + 30); ctx.lineTo(x + 40, y + 30);
+        ctx.fill();
+        ctx.fillStyle = '#00ff00'; // Lighter top
+        ctx.beginPath();
+        ctx.moveTo(x + 20, y + 5); ctx.lineTo(x + 10, y + 25); ctx.lineTo(x + 30, y + 25);
+        ctx.fill();
+    }
+
+    // --- GAME STATE ---
+    let score, gameActive, player, enemies, pBullets, stars, enemyDir, enemySpeed, trail, canShoot = true;
     const keys = {};
 
     function setupGame() {
-        initAudio();
-        score = 0; gameActive = true; enemyDir = 1; enemySpeed = 1.2;
-        pBullets = []; enemies = [];
-        player = { x: 280, y: 600, w: 40, h: 30 };
-        stars = Array.from({length: 40}, () => ({x: Math.random()*600, y: Math.random()*700, s: Math.random()*3+1}));
-        for(let i=0; i<7; i++) for(let j=0; j<4; j++) enemies.push({x: i*75+40, y: j*50+80, w: 30, h: 20, alive: true});
+        unlockAudio();
+        score = 0; gameActive = true; enemyDir = 1; enemySpeed = 1.3;
+        pBullets = []; enemies = []; trail = [];
+        player = { x: 280, y: 700, w: 40, h: 30 };
+        stars = Array.from({length: 40}, () => ({x: Math.random()*600, y: Math.random()*800, s: Math.random()*3+1}));
+        for(let i=0; i<8; i++) for(let j=0; j<4; j++) enemies.push({x: i*65+40, y: j*50+60, w: 30, h: 20, alive: true});
         
         document.getElementById('menuScreen').classList.add('hidden');
         document.getElementById('endScreen').classList.add('hidden');
         loop();
     }
 
-    document.getElementById('start-btn').onclick = setupGame;
-    document.getElementById('retry-btn').onclick = setupGame;
+    document.getElementById('start-btn').addEventListener('click', setupGame);
+    document.getElementById('retry-btn').addEventListener('click', setupGame);
 
     function shoot() {
-        if(!gameActive) return;
+        if(!gameActive || !canShoot) return;
         pBullets.push({ x: player.x+18, y: player.y });
-        playSynth(600, 0.1, 'square', 0.1, 150);
+        playSynth(800, 0.2, 'square', 0.1, 200);
+        canShoot = false; // Disable until key up
     }
 
-    // Input
-    window.addEventListener('keydown', e => { if(e.code === 'Space') shoot(); keys[e.code] = true; });
-    window.addEventListener('keyup', e => keys[e.code] = false);
-
-    // Mobile Event Listeners
-    const trigger = (btn, key) => {
-        btn.ontouchstart = (e) => { e.preventDefault(); keys[key] = true; };
-        btn.ontouchend = () => keys[key] = false;
+    // Mobile Input
+    const trigger = (id, key) => {
+        const el = document.getElementById(id);
+        el.ontouchstart = (e) => { e.preventDefault(); keys[key] = true; if(id === 'btnFire') shoot(); };
+        el.ontouchend = () => { keys[key] = false; if(id === 'btnFire') canShoot = true; };
     };
-    trigger(document.getElementById('btnLeft'), 'ArrowLeft');
-    trigger(document.getElementById('btnRight'), 'ArrowRight');
-    document.getElementById('btnFire').ontouchstart = (e) => { e.preventDefault(); shoot(); };
+    trigger('btnLeft', 'ArrowLeft');
+    trigger('btnRight', 'ArrowRight');
+    trigger('btnFire', 'Space');
+
+    // Desktop Input
+    window.onkeydown = (e) => { if(e.code === 'Space') shoot(); keys[e.code] = true; };
+    window.onkeyup = (e) => { if(e.code === 'Space') canShoot = true; keys[e.code] = false; };
 
     function loop() {
         if (!gameActive) return;
@@ -167,24 +212,21 @@
     }
 
     function update() {
-        if (keys['ArrowLeft'] && player.x > 0) player.x -= 7;
-        if (keys['ArrowRight'] && player.x < 560) player.x += 7;
+        if (keys['ArrowLeft'] && player.x > 0) player.x -= 6;
+        if (keys['ArrowRight'] && player.x < 560) player.x += 6;
+
+        // Update Trail
+        trail.push({x: player.x, y: player.y});
+        if(trail.length > 10) trail.shift();
 
         let edge = false;
         enemies.forEach(e => {
             if(!e.alive) return;
             e.x += enemyDir * enemySpeed;
             if(e.x < 10 || e.x > 560) edge = true;
-
-            // LOSE: If enemy touches player
-            if(e.x < player.x+player.w && e.x+e.w > player.x && e.y < player.y+player.h && e.y+e.h > player.y) {
-                gameOver("COLLISION DETECTED");
-            }
-            // LOSE: If enemy hits bottom
-            if(e.y > 650) gameOver("PLANET INVADED");
+            if(e.y > 680) gameOver("CITY OBLITERATED"); // Missile Command style failure
         });
-
-        if(edge) { enemyDir *= -1; enemies.forEach(e => e.y += 25); enemySpeed += 0.05; }
+        if(edge) { enemyDir *= -1; enemies.forEach(e => e.y += 20); enemySpeed += 0.05; }
 
         pBullets = pBullets.filter(b => {
             b.y -= 12;
@@ -192,32 +234,31 @@
             enemies.forEach(e => {
                 if(e.alive && b.x > e.x && b.x < e.x+30 && b.y > e.y && b.y < e.y+20) {
                     e.alive = false; hit = true; score += 10; scoreVal.innerText = score;
-                    playSynth(100, 0.2, 'sawtooth', 0.3, 20); // Deep Thud
+                    playSynth(150, 0.3, 'sawtooth', 0.4, 40); // Thud
                 }
             });
             return b.y > 0 && !hit;
         });
 
-        stars.forEach(s => { s.y += s.s; if(s.y > 700) s.y = 0; });
-        if (enemies.every(e => !e.alive)) gameOver("SYSTEMS CLEAR");
+        stars.forEach(s => { s.y += s.s; if(s.y > 800) s.y = 0; });
+        if (enemies.every(e => !e.alive)) gameOver("GALAXY SAVED");
     }
 
     function gameOver(txt) {
         gameActive = false;
         document.getElementById('endScreen').classList.remove('hidden');
         document.getElementById('endTitle').innerText = txt;
-        playSynth(40, 0.5, 'sawtooth', 0.8, 10);
+        playSynth(40, 0.5, 'sawtooth', 1.5, 5);
     }
 
     function draw() {
-        ctx.fillStyle = '#050010'; ctx.fillRect(0, 0, 600, 700);
+        ctx.clearRect(0, 0, 600, 800);
         ctx.fillStyle = '#222'; stars.forEach(s => ctx.fillRect(s.x, s.y, s.s, s.s));
-        drawPlayer(player.x, player.y);
-        enemies.forEach(e => { if(e.alive) drawEnemy(e.x, e.y); });
-        ctx.fillStyle = varColor('--neon-blue'); pBullets.forEach(b => ctx.fillRect(b.x, b.y, 4, 15));
+        drawCity();
+        drawPlayer(player.x, player.y, trail);
+        enemies.forEach(e => { if(e.alive) drawUFO(e.x, e.y); });
+        ctx.fillStyle = '#fff'; pBullets.forEach(b => ctx.fillRect(b.x, b.y, 4, 15));
     }
-
-    function varColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name); }
 </script>
 </body>
 </html>
