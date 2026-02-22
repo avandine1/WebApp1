@@ -3,16 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My GitHub Test</title>
+    <title>Retro Space Attack</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f4f8; }
-        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        body { background: #000; color: #0f0; font-family: 'Courier New', Courier, monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
+        canvas { border: 2px solid #333; background: #000; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); }
+        .ui { margin-bottom: 10px; text-align: center; }
+        kbd { background: #333; padding: 2px 6px; border-radius: 4px; color: #fff; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>🚀 My Web App is Live!</h1>
-        <p>This is a test hosted on GitHub Pages.</p>
+
+    <div class="ui">
+        <h1>SPACE INVADERS TEST</h1>
+        <p>Use <kbd>←</kbd> <kbd>→</kbd> to Move | <kbd>Space</kbd> to Shoot</p>
+        <h2 id="scoreBoard">Score: 0</h2>
     </div>
+    <canvas id="gameCanvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreBoard = document.getElementById('scoreBoard');
+
+    canvas.width = 600;
+    canvas.height = 400;
+
+    // Game State
+    let score = 0;
+    let gameActive = true;
+    const player = { x: 280, y: 360, w: 40, h: 20, speed: 7 };
+    const bullets = [];
+    const enemies = [];
+    const keys = {};
+
+    // Create Enemy Grid
+    for(let i = 0; i < 6; i++) {
+        for(let j = 0; j < 3; j++) {
+            enemies.push({ x: i * 80 + 80, y: j * 40 + 50, w: 40, h: 20, alive: true });
+        }
+    }
+
+    // Input Listeners
+    window.addEventListener('keydown', e => keys[e.code] = true);
+    window.addEventListener('keyup', e => keys[e.code] = false);
+
+    function update() {
+        if (!gameActive) return;
+
+        // Player Movement
+        if (keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
+        if (keys['ArrowRight'] && player.x < canvas.width - player.w) player.x += player.speed;
+
+        // Shooting
+        if (keys['Space']) {
+            if (bullets.length === 0 || bullets[bullets.length-1].y < 300) {
+                bullets.push({ x: player.x + player.w/2 - 2, y: player.y, w: 4, h: 10 });
+            }
+        }
+
+        // Bullet Logic
+        bullets.forEach((b, index) => {
+            b.y -= 10;
+            if (b.y < 0) bullets.splice(index, 1);
+
+            // Collision Detection
+            enemies.forEach(enemy => {
+                if (enemy.alive && b.x < enemy.x + enemy.w && b.x + b.w > enemy.x && b.y < enemy.y + enemy.h && b.y + b.h > enemy.y) {
+                    enemy.alive = false;
+                    bullets.splice(index, 1);
+                    score += 10;
+                    scoreBoard.innerText = `Score: ${score}`;
+                }
+            });
+        });
+
+        // Win Condition
+        if (enemies.every(e => !e.alive)) {
+            alert("VICTORY! Earth is safe.");
+            location.reload();
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw Player (Green Ship)
+        ctx.fillStyle = '#0f0';
+        ctx.fillRect(player.x, player.y, player.w, player.h);
+
+        // Draw Bullets (Red)
+        ctx.fillStyle = '#f00';
+        bullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
+
+        // Draw Enemies (Purple)
+        ctx.fillStyle = '#a0f';
+        enemies.forEach(e => {
+            if (e.alive) ctx.fillRect(e.x, e.y, e.w, e.h);
+        });
+
+        requestAnimationFrame(() => {
+            update();
+            draw();
+        });
+    }
+
+    draw();
+</script>
 </body>
 </html>
