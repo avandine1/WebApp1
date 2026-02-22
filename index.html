@@ -4,126 +4,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
     <style>
-        body { margin: 0; background-color: #000; overflow: hidden; touch-action: none; }
-        canvas { display: block; margin: 0 auto; }
+        body { margin: 0; background: #050510; overflow: hidden; touch-action: none; font-family: 'Courier New', Courier, monospace; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .mobile-btn { pointer-events: auto; position: absolute; width: 60px; height: 60px; background: rgba(0, 255, 255, 0.2); border: 2px solid #0ff; border-radius: 50%; display: none; }
+        @media (pointer: coarse) { .mobile-btn { display: block; } }
     </style>
 </head>
 <body>
 
+<div id="ui-layer">
+    <div id="btn-up" class="mobile-btn" style="bottom: 140px; left: 80px;"></div>
+    <div id="btn-down" class="mobile-btn" style="bottom: 20px; left: 80px;"></div>
+    <div id="btn-left" class="mobile-btn" style="bottom: 80px; left: 20px;"></div>
+    <div id="btn-right" class="mobile-btn" style="bottom: 80px; left: 140px;"></div>
+    <div id="btn-beam" class="mobile-btn" style="bottom: 50px; right: 40px; width: 100px; height: 100px; background: rgba(255, 0, 255, 0.3); border-color: #f0f;"></div>
+</div>
+
 <script>
 const config = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    scale: {
-        mode: Phaser.Scale.FIT, // Auto-resizes for mobile screens
-        autoCenter: Phaser.Scale.CENTER_BOTH
-    },
-    physics: {
-        default: 'arcade',
-        arcade: { gravity: { y: 0 }, debug: false }
-    },
+    width: window.innerWidth,
+    height: window.innerHeight,
+    physics: { default: 'arcade', arcade: { gravity: { y: 0 } } },
+    pixelArt: true, // Keeps pixel edges sharp
     scene: { preload: preload, create: create, update: update }
 };
 
 const game = new Phaser.Game(config);
-let ufo, beam, cows, farmers, score = 0, scoreText, music;
-let isBeaming = false;
+let ufo, beam, cursors, score = 0, scoreText;
+let music, sfxAbduct, sfxZap;
+let moveKeys = { up: false, down: false, left: false, right: false, beam: false };
 
 function preload() {
-    this.load.image('sky', 'https://labs.phaser.io/assets/skies/space3.png');
-    // Load your generated Synthwave MP3 here
-    // this.load.audio('synthwave', 'assets/neon_horizon_drive.mp3'); 
+    // Realistic Pixel Assets (Replace with your URLs)
+    this.load.image('ufo', 'ufo_pixel.png'); 
+    this.load.image('cow', 'cow_pixel.png');
+    this.load.image('background', 'image_3e687d.jpg'); // Your reference moon bg
+    
+    // SOUNDS: Place these in your /assets/ folder
+    // this.load.audio('music', 'neon_horizon_drive.mp3');
+    // this.load.audio('sfx_abduct', 'abduction_hum.mp3');
+    // this.load.audio('sfx_zap', 'laser_hit.mp3');
 }
 
 function create() {
-    this.add.image(400, 300, 'sky').setAlpha(0.4).setScrollFactor(0);
-
-    // Placeholder Graphics
-    const ufoGraphic = this.make.graphics().lineStyle(3, 0x00ffff).strokeCircle(20, 20, 18).strokeRect(0, 15, 40, 8);
-    ufoGraphic.generateTexture('ufo', 40, 40);
+    // 1. Background Setup
+    let bg = this.add.image(config.width/2, config.height/2, 'background').setDisplaySize(config.width, config.height).setAlpha(0.6);
     
-    ufo = this.physics.add.sprite(400, 200, 'ufo');
+    // 2. UFO with Neon Bloom
+    ufo = this.physics.add.sprite(config.width/2, 200, 'ufo').setScale(1.5);
     ufo.setCollideWorldBounds(true);
-
-    beam = this.add.rectangle(0, 0, 60, 600, 0x00ff00, 0.2);
-    beam.setVisible(false);
-
-    cows = this.physics.add.group();
-    farmers = this.physics.add.group();
-
-    scoreText = this.add.text(20, 20, 'ABDUCTIONS: 0', { fontSize: '28px', fill: '#0ff', fontFamily: 'monospace' });
-
-    // --- MOBILE / TOUCH CONTROLS ---
     
-    // 1. Movement: UFO follows the pointer (finger or mouse)
-    this.input.on('pointermove', (pointer) => {
-        // Smoothly move toward finger position
-        this.physics.moveToObject(ufo, pointer, 300);
-        
-        // Add a nice tilt based on movement direction
-        if (pointer.x < ufo.x) ufo.setAngle(-15);
-        else if (pointer.x > ufo.x) ufo.setAngle(15);
-    });
+    // Create a "Glow" effect under the UFO
+    let glow = this.add.pointlight(ufo.x, ufo.y, 0x00ffff, 150, 0.5);
+    this.events.on('update', () => { glow.setPosition(ufo.x, ufo.y); });
 
-    // 2. Beaming: Activate beam when screen is pressed
-    this.input.on('pointerdown', () => { 
-        isBeaming = true; 
-        // Start music on first tap (mobile requirement)
-        if (music && !music.isPlaying) music.play();
-    });
-    this.input.on('pointerup', () => { isBeaming = false; ufo.setVelocity(0); });
+    // 3. Abduction Beam (Cyberpunk Gradient)
+    beam = this.add.rectangle(0, 0, 80, 2000, 0x00ff00, 0.3).setVisible(false);
+    
+    // 4. Input Mapping (Mobile + Keyboard)
+    setupControls.call(this);
 
-    // Spawning logic
-    this.time.addEvent({ delay: 2500, callback: spawnTarget, callbackScope: this, loop: true });
+    // 5. Audio Initialization
+    // music = this.sound.add('music', { loop: true, volume: 0.5 });
+    // sfxAbduct = this.sound.add('sfx_abduct', { volume: 0.3 });
+
+    scoreText = this.add.text(20, 20, 'SYSTEM_SCORE: 000', { fontSize: '24px', color: '#0ff' });
 }
 
 function update() {
-    if (isBeaming) {
-        beam.setPosition(ufo.x, ufo.y + 300);
-        beam.setVisible(true);
-        
-        // Abduction detection
-        cows.children.iterate(cow => {
-            if (cow && Math.abs(cow.x - ufo.x) < 30) {
-                cow.y -= 5; // Pull them up!
-                if (cow.y < ufo.y) {
-                    cow.destroy();
-                    score += 10;
-                    scoreText.setText('ABDUCTIONS: ' + score);
-                }
-            }
-        });
+    const speed = 300;
+    ufo.setVelocity(0);
+
+    // Movement Logic
+    if (moveKeys.left) { ufo.setVelocityX(-speed); ufo.setAngle(-10); }
+    else if (moveKeys.right) { ufo.setVelocityX(speed); ufo.setAngle(10); }
+    else { ufo.setAngle(0); }
+
+    if (moveKeys.up) ufo.setVelocityY(-speed);
+    if (moveKeys.down) ufo.setVelocityY(speed);
+
+    // Beam Action
+    if (moveKeys.beam) {
+        beam.setVisible(true).setPosition(ufo.x, ufo.y + 1000);
+        // if (!sfxAbduct.isPlaying) sfxAbduct.play();
     } else {
         beam.setVisible(false);
+        // sfxAbduct.stop();
     }
-
-    // Danger: If you fly too low near a farmer (red square)
-    farmers.children.iterate(f => {
-        if (f && Phaser.Math.Distance.Between(ufo.x, ufo.y, f.x, f.y) < 60) {
-            this.scene.restart();
-            score = 0;
-        }
-    });
 }
 
-function spawnTarget() {
-    let x = Phaser.Math.Between(50, 750);
-    let type = Math.random() > 0.3 ? 'cow' : 'farmer';
-    
-    if (type === 'cow') {
-        let cow = cows.create(x, 560, null);
-        const g = this.make.graphics().fillStyle(0xffffff).fillRect(0,0,25,18);
-        g.generateTexture('cow', 25, 18);
-        cow.setTexture('cow');
-    } else {
-        let farmer = farmers.create(x, 560, null);
-        const g = this.make.graphics().fillStyle(0xff0055).fillRect(0,0,20,35);
-        g.generateTexture('farmer', 20, 35);
-        farmer.setTexture('farmer');
-    }
+function setupControls() {
+    cursors = this.input.keyboard.createCursorKeys();
+    let wasd = this.input.keyboard.addKeys('W,A,S,D');
+
+    // Sync Keyboard to moveKeys
+    this.events.on('update', () => {
+        moveKeys.up = cursors.up.isDown || wasd.W.isDown;
+        moveKeys.down = cursors.down.isDown || wasd.S.isDown;
+        moveKeys.left = cursors.left.isDown || wasd.A.isDown;
+        moveKeys.right = cursors.right.isDown || wasd.D.isDown;
+        moveKeys.beam = cursors.space.isDown;
+    });
+
+    // Mobile D-Pad Listeners
+    const bindBtn = (id, key) => {
+        const el = document.getElementById(id);
+        el.addEventListener('pointerdown', () => { moveKeys[key] = true; });
+        el.addEventListener('pointerup', () => { moveKeys[key] = false; });
+        el.addEventListener('pointerout', () => { moveKeys[key] = false; });
+    };
+
+    bindBtn('btn-up', 'up');
+    bindBtn('btn-down', 'down');
+    bindBtn('btn-left', 'left');
+    bindBtn('btn-right', 'right');
+    bindBtn('btn-beam', 'beam');
 }
 </script>
-
 </body>
 </html>
