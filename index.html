@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retro Space Attack</title>
+    <title>Retro Space Attack: Hard Mode</title>
     <style>
-        body { background: #000; color: #0f0; font-family: 'Courier New', Courier, monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
-        canvas { border: 2px solid #333; background: #000; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); }
+        body { background: #000; color: #0f0; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
+        canvas { border: 4px solid #333; background: #000; box-shadow: 0 0 30px rgba(0, 255, 0, 0.1); cursor: crosshair; }
         .ui { margin-bottom: 10px; text-align: center; }
-        kbd { background: #333; padding: 2px 6px; border-radius: 4px; color: #fff; }
+        .game-over { color: #f00; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="ui">
-        <h1>SPACE INVADERS TEST</h1>
-        <p>Use <kbd>←</kbd> <kbd>→</kbd> to Move | <kbd>Space</kbd> to Shoot</p>
+        <h1>SPACE INVADERS: ELITE</h1>
         <h2 id="scoreBoard">Score: 0</h2>
+        <p id="message">Don't get hit by the purple lasers!</p>
     </div>
     <canvas id="gameCanvas"></canvas>
 
@@ -24,78 +24,129 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const scoreBoard = document.getElementById('scoreBoard');
+    const message = document.getElementById('message');
 
     canvas.width = 600;
-    canvas.height = 400;
+    canvas.height = 450;
 
-    // Game State
+    // --- AUDIO SYSTEM (Web Audio API) ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(freq, type, duration, volume = 0.1) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type; // 'square' is very retro, 'sine' is soft
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    // --- GAME STATE ---
     let score = 0;
     let gameActive = true;
-    const player = { x: 280, y: 360, w: 40, h: 20, speed: 7 };
-    const bullets = [];
+    let enemyDirection = 1;
+    let enemySpeed = 1;
+    const player = { x: 280, y: 400, w: 40, h: 20, speed: 7 };
+    const pBullets = []; // Player bullets
+    const eBullets = []; // Enemy bullets
     const enemies = [];
     const keys = {};
 
-    // Create Enemy Grid
-    for(let i = 0; i < 6; i++) {
+    for(let i = 0; i < 8; i++) {
         for(let j = 0; j < 3; j++) {
-            enemies.push({ x: i * 80 + 80, y: j * 40 + 50, w: 40, h: 20, alive: true });
+            enemies.push({ x: i * 60 + 50, y: j * 40 + 50, w: 30, h: 20, alive: true });
         }
     }
 
-    // Input Listeners
-    window.addEventListener('keydown', e => keys[e.code] = true);
+    window.addEventListener('keydown', e => {
+        keys[e.code] = true;
+        if (audioCtx.state === 'suspended') audioCtx.resume(); // Browser requirement
+    });
     window.addEventListener('keyup', e => keys[e.code] = false);
 
     function update() {
         if (!gameActive) return;
 
-        // Player Movement
+        // Player movement
         if (keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
         if (keys['ArrowRight'] && player.x < canvas.width - player.w) player.x += player.speed;
 
-        // Shooting
-        if (keys['Space']) {
-            if (bullets.length === 0 || bullets[bullets.length-1].y < 300) {
-                bullets.push({ x: player.x + player.w/2 - 2, y: player.y, w: 4, h: 10 });
+        // Player Shooting
+        if (keys['Space'] && pBullets.length < 3) {
+            pBullets.push({ x: player.x + player.w/2 - 2, y: player.y, w: 4, h: 10 });
+            playSound(440, 'square', 0.1);
+        }
+
+        // Enemy movement logic
+        let edgeHit = false;
+        enemies.forEach(e => {
+            if (!e.alive) return;
+            e.x += enemyDirection * enemySpeed;
+            if (e.x <= 0 || e.x + e.w >= canvas.width) edgeHit = true;
+        });
+
+        if (edgeHit) {
+            enemyDirection *= -1;
+            enemies.forEach(e => e.y += 15);
+        }
+
+        // Random Enemy Shooting
+        if (Math.random() < 0.02) {
+            const liveEnemies = enemies.filter(e => e.alive);
+            if (liveEnemies.length > 0) {
+                const shooter = liveEnemies[Math.floor(Math.random() * liveEnemies.length)];
+                eBullets.push({ x: shooter.x + shooter.w/2, y: shooter.y + shooter.h, w: 4, h: 10 });
             }
         }
 
-        // Bullet Logic
-        bullets.forEach((b, index) => {
-            b.y -= 10;
-            if (b.y < 0) bullets.splice(index, 1);
-
-            // Collision Detection
-            enemies.forEach(enemy => {
-                if (enemy.alive && b.x < enemy.x + enemy.w && b.x + b.w > enemy.x && b.y < enemy.y + enemy.h && b.y + b.h > enemy.y) {
-                    enemy.alive = false;
-                    bullets.splice(index, 1);
+        // Player Bullet Update
+        pBullets.forEach((b, i) => {
+            b.y -= 8;
+            if (b.y < 0) pBullets.splice(i, 1);
+            enemies.forEach(e => {
+                if (e.alive && b.x < e.x + e.w && b.x + b.w > e.x && b.y < e.y + e.h && b.y + b.h > e.y) {
+                    e.alive = false;
+                    pBullets.splice(i, 1);
                     score += 10;
                     scoreBoard.innerText = `Score: ${score}`;
+                    playSound(150, 'sawtooth', 0.2);
                 }
             });
         });
 
-        // Win Condition
-        if (enemies.every(e => !e.alive)) {
-            alert("VICTORY! Earth is safe.");
-            location.reload();
-        }
+        // Enemy Bullet Update (Danger!)
+        eBullets.forEach((b, i) => {
+            b.y += 5;
+            if (b.y > canvas.height) eBullets.splice(i, 1);
+            // Hit Player?
+            if (b.x < player.x + player.w && b.x + b.w > player.x && b.y < player.y + player.h && b.y + b.h > player.y) {
+                gameActive = false;
+                playSound(60, 'sawtooth', 0.8, 0.3);
+                message.innerHTML = "<span class='game-over'>GAME OVER - RELOAD TO TRY AGAIN</span>";
+            }
+        });
     }
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Draw Player (Green Ship)
+        
+        // Player
         ctx.fillStyle = '#0f0';
         ctx.fillRect(player.x, player.y, player.w, player.h);
 
-        // Draw Bullets (Red)
-        ctx.fillStyle = '#f00';
-        bullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
+        // Player Bullets
+        ctx.fillStyle = '#fff';
+        pBullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
 
-        // Draw Enemies (Purple)
+        // Enemy Bullets
+        ctx.fillStyle = '#f0f';
+        eBullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
+
+        // Enemies
         ctx.fillStyle = '#a0f';
         enemies.forEach(e => {
             if (e.alive) ctx.fillRect(e.x, e.y, e.w, e.h);
