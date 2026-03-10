@@ -1,4 +1,4 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -47,14 +47,14 @@
 
   .wrapper {
     display: flex;
-    gap: 20px;
+    gap: 28px;
     align-items: center;
     padding: 20px;
   }
 
   /* Side panels */
   .side-panel {
-    width: 160px;
+    width: 200px;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -63,7 +63,7 @@
   .panel-box {
     border: 1px solid var(--border);
     background: var(--panel);
-    padding: 14px;
+    padding: 18px;
     position: relative;
     box-shadow: 0 0 12px #00f5ff18, inset 0 0 20px #00f5ff05;
   }
@@ -78,7 +78,7 @@
 
   .panel-label {
     font-family: 'Orbitron', sans-serif;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 3px;
     color: var(--glow-cyan);
@@ -89,7 +89,7 @@
 
   .panel-value {
     font-family: 'Orbitron', sans-serif;
-    font-size: 22px;
+    font-size: 28px;
     font-weight: 900;
     color: #fff;
     text-shadow: 0 0 10px var(--glow-cyan), 0 0 20px var(--glow-cyan);
@@ -149,12 +149,12 @@
 
   .game-title {
     font-family: 'Orbitron', sans-serif;
-    font-size: 28px;
+    font-size: 36px;
     font-weight: 900;
-    letter-spacing: 10px;
+    letter-spacing: 12px;
     color: var(--glow-cyan);
     text-shadow: 0 0 10px var(--glow-cyan), 0 0 40px var(--glow-cyan), 0 0 80px #00f5ff60;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     animation: flicker 6s infinite;
   }
 
@@ -181,15 +181,15 @@
 
   .overlay h2 {
     font-family: 'Orbitron', sans-serif;
-    font-size: 20px;
+    font-size: 26px;
     font-weight: 900;
-    letter-spacing: 5px;
+    letter-spacing: 6px;
     color: var(--glow-pink);
     text-shadow: 0 0 14px var(--glow-pink), 0 0 30px var(--glow-pink);
   }
 
   .overlay p {
-    font-size: 12px;
+    font-size: 14px;
     color: var(--dim);
     letter-spacing: 2px;
     text-align: center;
@@ -198,10 +198,10 @@
 
   .btn {
     font-family: 'Orbitron', sans-serif;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 4px;
-    padding: 12px 28px;
+    padding: 14px 32px;
     background: transparent;
     border: 1px solid var(--glow-cyan);
     color: var(--glow-cyan);
@@ -234,7 +234,7 @@
     align-items: center;
     gap: 8px;
     margin-bottom: 6px;
-    font-size: 10px;
+    font-size: 14px;
     color: var(--dim);
     letter-spacing: 1px;
   }
@@ -242,7 +242,7 @@
   .key {
     border: 1px solid #0ff4;
     padding: 2px 6px;
-    font-size: 9px;
+    font-size: 11px;
     color: var(--glow-cyan);
     text-shadow: 0 0 6px var(--glow-cyan);
     min-width: 24px;
@@ -291,7 +291,7 @@
   <div class="game-wrap">
     <div class="game-title">TETRIS</div>
     <div style="position:relative">
-      <canvas id="game-canvas" width="300" height="600"></canvas>
+      <canvas id="game-canvas" width="360" height="720"></canvas>
       <!-- Start screen -->
       <div class="overlay" id="start-screen">
         <h2>INSERT COIN</h2>
@@ -318,7 +318,7 @@
   <div class="side-panel">
     <div class="panel-box">
       <div class="panel-label">Next</div>
-      <canvas id="next-canvas" width="120" height="100"></canvas>
+      <canvas id="next-canvas" width="150" height="130"></canvas>
     </div>
     <div class="panel-box">
       <div class="panel-label">High Score</div>
@@ -326,7 +326,7 @@
     </div>
     <div class="panel-box" style="margin-top:auto">
       <div class="panel-label">Lines ×pts</div>
-      <div style="font-size:10px;color:var(--dim);line-height:2.2;letter-spacing:1px">
+      <div style="font-size:13px;color:var(--dim);line-height:2.2;letter-spacing:1px">
         1 → 100<br>2 → 300<br>3 → 500<br>4 → 800
       </div>
     </div>
@@ -340,7 +340,7 @@
 <script>
 // ── Constants ─────────────────────────────────────────────────────────────────
 const COLS = 10, ROWS = 20;
-const BLOCK = 30;
+const BLOCK = 36;
 const COLORS = {
   I: '#00f5ff',
   O: '#ffe500',
@@ -442,10 +442,13 @@ function clearLines() {
     });
     flashRows = [];
     const cleared = full.length;
+    const prevLevel = level;
     lines += cleared;
     score += SCORE_TABLE[cleared] * level;
     level = Math.floor(lines / 10) + 1;
     if (score > hiscore) hiscore = score;
+    sfxClear(cleared);
+    if (level > prevLevel) sfxLevelUp();
     updateUI();
   }, 200);
 }
@@ -490,6 +493,7 @@ function gameLoop(ts) {
     if (isValid(current, 0, 1)) {
       current.y++;
     } else {
+      sfxLand();
       place(current);
       clearLines();
       spawn();
@@ -611,7 +615,7 @@ function draw() {
     const startY = (nextCanvas.height / BLOCK - 4) / 2 + offY;
 
     // Center in 120x100 canvas with BLOCK=24 equivalent
-    const nb = 24;
+    const nb = 30;
     const ox = (nextCanvas.width - m[0].length * nb) / 2;
     const oy = (nextCanvas.height - m.length * nb) / 2;
 
@@ -693,16 +697,16 @@ document.addEventListener('keydown', e => {
   switch (e.key) {
     case 'ArrowLeft':
       e.preventDefault();
-      if (isValid(current, -1, 0)) current.x--;
+      if (isValid(current, -1, 0)) { current.x--; sfxMove(); }
       break;
     case 'ArrowRight':
       e.preventDefault();
-      if (isValid(current, 1, 0)) current.x++;
+      if (isValid(current, 1, 0)) { current.x++; sfxMove(); }
       break;
     case 'ArrowDown':
       e.preventDefault();
       if (isValid(current, 0, 1)) { current.y++; score += 1; updateUI(); }
-      else { place(current); clearLines(); spawn(); }
+      else { sfxLand(); place(current); clearLines(); spawn(); }
       break;
     case 'ArrowUp':
     case 'x':
@@ -714,6 +718,7 @@ document.addEventListener('keydown', e => {
         if (isValid({ ...current, matrix: rot }, k, 0)) {
           current.matrix = rot;
           current.x += k;
+          sfxRotate();
           break;
         }
       }
@@ -724,6 +729,8 @@ document.addEventListener('keydown', e => {
       let drop = 0;
       while (isValid(current, 0, 1)) { current.y++; drop++; }
       score += drop * 2;
+      sfxDrop();
+      sfxLand();
       place(current);
       clearLines();
       spawn();
@@ -738,7 +745,7 @@ document.addEventListener('keydown', e => {
 });
 
 // ── Music (Korobeiniki - Tetris Theme A) ──────────────────────────────────────
-let audioCtx = null, musicNodes = [], musicPlaying = false, musicMuted = false;
+let audioCtx = null, musicNodes = [], musicPlaying = false, musicMuted = false, sfxMuted = false;
 
 const THEME_A = [
   ['E5',1],['B4',0.5],['C5',0.5],['D5',1],['C5',0.5],['B4',0.5],
@@ -772,12 +779,118 @@ function initAudio() {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
 
+// ── Sound Effects ─────────────────────────────────────────────────────────────
+function sfxMove() {
+  if (!audioCtx || sfxMuted) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = 'square';
+  o.frequency.setValueAtTime(220, audioCtx.currentTime);
+  o.frequency.linearRampToValueAtTime(180, audioCtx.currentTime + 0.04);
+  g.gain.setValueAtTime(0.08, audioCtx.currentTime);
+  g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.04);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime + 0.04);
+}
+
+function sfxRotate() {
+  if (!audioCtx || sfxMuted) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = 'square';
+  o.frequency.setValueAtTime(300, audioCtx.currentTime);
+  o.frequency.linearRampToValueAtTime(480, audioCtx.currentTime + 0.06);
+  g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+  g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.06);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime + 0.06);
+}
+
+function sfxDrop() {
+  if (!audioCtx || sfxMuted) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = 'square';
+  o.frequency.setValueAtTime(160, audioCtx.currentTime);
+  o.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.12);
+  g.gain.setValueAtTime(0.18, audioCtx.currentTime);
+  g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.12);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime + 0.12);
+}
+
+function sfxLand() {
+  if (!audioCtx || sfxMuted) return;
+  [0, 0.03, 0.06].forEach((delay, i) => {
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'square';
+    o.frequency.setValueAtTime(120 - i * 20, audioCtx.currentTime + delay);
+    g.gain.setValueAtTime(0.12, audioCtx.currentTime + delay);
+    g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + delay + 0.08);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(audioCtx.currentTime + delay);
+    o.stop(audioCtx.currentTime + delay + 0.08);
+  });
+}
+
+function sfxClear(numLines) {
+  if (!audioCtx || sfxMuted) return;
+  const freqs = numLines === 4
+    ? [523, 659, 784, 1047, 1319]
+    : [392, 523, 659, 784];
+  freqs.forEach((freq, i) => {
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'square';
+    o.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.055);
+    g.gain.setValueAtTime(0.15, audioCtx.currentTime + i * 0.055);
+    g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + i * 0.055 + 0.15);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(audioCtx.currentTime + i * 0.055);
+    o.stop(audioCtx.currentTime + i * 0.055 + 0.15);
+  });
+}
+
+function sfxGameOver() {
+  if (!audioCtx) return;
+  const notes = [523, 415, 330, 262, 196];
+  notes.forEach((freq, i) => {
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.18);
+    o.frequency.linearRampToValueAtTime(freq * 0.7, audioCtx.currentTime + i * 0.18 + 0.16);
+    g.gain.setValueAtTime(0.2, audioCtx.currentTime + i * 0.18);
+    g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + i * 0.18 + 0.18);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(audioCtx.currentTime + i * 0.18);
+    o.stop(audioCtx.currentTime + i * 0.18 + 0.2);
+  });
+}
+
+function sfxLevelUp() {
+  if (!audioCtx || sfxMuted) return;
+  const notes = [523, 659, 784, 1047];
+  notes.forEach((freq, i) => {
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'square';
+    o.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.07);
+    g.gain.setValueAtTime(0.15, audioCtx.currentTime + i * 0.07);
+    g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + i * 0.07 + 0.1);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(audioCtx.currentTime + i * 0.07);
+    o.stop(audioCtx.currentTime + i * 0.07 + 0.1);
+  });
+}
+
 function playMusic() {
   if (!audioCtx) return;
   stopMusic();
   musicPlaying = true;
   const masterGain = audioCtx.createGain();
-  masterGain.gain.setValueAtTime(musicMuted ? 0 : 0.15, audioCtx.currentTime);
+  masterGain.gain.setValueAtTime(musicMuted ? 0 : 0.09, audioCtx.currentTime);
   masterGain.connect(audioCtx.destination);
   musicNodes = [masterGain];
   const BPM = 160;
@@ -786,32 +899,59 @@ function playMusic() {
 
   function scheduleLoop() {
     const loopStart = t;
-    THEME_A.forEach(([note, dur]) => {
+    THEME_A.forEach(([note, dur], idx) => {
       const freq = NOTE_FREQ[note] || 0;
       const duration = dur * beat;
       if (freq > 0) {
+        // Lead voice - square wave
         const osc = audioCtx.createOscillator();
         const env = audioCtx.createGain();
         osc.type = 'square';
         osc.frequency.setValueAtTime(freq, t);
         env.gain.setValueAtTime(0, t);
-        env.gain.linearRampToValueAtTime(0.5, t + 0.01);
-        env.gain.setValueAtTime(0.4, t + duration * 0.7);
+        env.gain.linearRampToValueAtTime(0.38, t + 0.01);
+        env.gain.setValueAtTime(0.3, t + duration * 0.7);
         env.gain.linearRampToValueAtTime(0, t + duration * 0.95);
         osc.connect(env); env.connect(masterGain);
         osc.start(t); osc.stop(t + duration);
         musicNodes.push(osc, env);
 
+        // Harmony - fifth above (triangle), softer
         const osc2 = audioCtx.createOscillator();
         const env2 = audioCtx.createGain();
         osc2.type = 'triangle';
-        osc2.frequency.setValueAtTime(freq / 2, t);
+        osc2.frequency.setValueAtTime(freq * 1.5, t);
         env2.gain.setValueAtTime(0, t);
-        env2.gain.linearRampToValueAtTime(0.18, t + 0.02);
-        env2.gain.linearRampToValueAtTime(0, t + duration * 0.9);
+        env2.gain.linearRampToValueAtTime(0.12, t + 0.02);
+        env2.gain.linearRampToValueAtTime(0, t + duration * 0.85);
         osc2.connect(env2); env2.connect(masterGain);
         osc2.start(t); osc2.stop(t + duration);
         musicNodes.push(osc2, env2);
+
+        // Bass - two octaves below (square, pulse-y)
+        const osc3 = audioCtx.createOscillator();
+        const env3 = audioCtx.createGain();
+        osc3.type = 'square';
+        osc3.frequency.setValueAtTime(freq / 4, t);
+        env3.gain.setValueAtTime(0, t);
+        env3.gain.linearRampToValueAtTime(0.22, t + 0.015);
+        env3.gain.setValueAtTime(0.18, t + duration * 0.5);
+        env3.gain.linearRampToValueAtTime(0, t + duration * 0.88);
+        osc3.connect(env3); env3.connect(masterGain);
+        osc3.start(t); osc3.stop(t + duration);
+        musicNodes.push(osc3, env3);
+
+        // Sub shimmer - slight detune for width
+        const osc4 = audioCtx.createOscillator();
+        const env4 = audioCtx.createGain();
+        osc4.type = 'sawtooth';
+        osc4.frequency.setValueAtTime(freq * 0.998, t);
+        env4.gain.setValueAtTime(0, t);
+        env4.gain.linearRampToValueAtTime(0.07, t + 0.02);
+        env4.gain.linearRampToValueAtTime(0, t + duration * 0.9);
+        osc4.connect(env4); env4.connect(masterGain);
+        osc4.start(t); osc4.stop(t + duration);
+        musicNodes.push(osc4, env4);
       }
       t += duration;
     });
@@ -831,7 +971,7 @@ function stopMusic() {
 
 function toggleMute() {
   musicMuted = !musicMuted;
-  if (musicNodes[0]) musicNodes[0].gain.setValueAtTime(musicMuted ? 0 : 0.15, audioCtx.currentTime);
+  if (musicNodes[0]) musicNodes[0].gain.setValueAtTime(musicMuted ? 0 : 0.09, audioCtx.currentTime);
   updateMuteBtn();
 }
 
@@ -862,6 +1002,7 @@ const _origEndGame = endGame;
 endGame = function() {
   _origEndGame();
   stopMusic();
+  setTimeout(() => sfxGameOver(), 100);
 };
 
 // Initial draw
