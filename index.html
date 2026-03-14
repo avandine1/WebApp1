@@ -74,9 +74,10 @@
     pointer-events: none;
   }
 
+  /* HUD Adjusted to be closer to the box */
   .hud {
     position: absolute;
-    top: 20px;
+    top: 5vh;
     z-index: 10;
     pointer-events: none;
     display: flex;
@@ -84,8 +85,19 @@
     gap: 2px;
   }
 
-  .hud.left { left: 15px; text-align: left; }
-  .hud.right { right: 15px; text-align: right; }
+  .hud.left { 
+    right: calc(50% + 5.5 * 30px); /* Positioned relative to center board */
+    text-align: right; 
+  }
+  .hud.right { 
+    left: calc(50% + 5.5 * 30px); 
+    text-align: left; 
+  }
+
+  @media (max-width: 600px) {
+    .hud.left { left: 10px; right: auto; text-align: left; }
+    .hud.right { right: 10px; left: auto; text-align: right; }
+  }
 
   .hud-label {
     font-family: 'Orbitron', sans-serif;
@@ -184,7 +196,7 @@
 
   <canvas id="game-canvas"></canvas>
 
-  <div class="hint">TAP SIDE TO MOVE • SWIPE DOWN TO DROP • SPACE TO HARD DROP</div>
+  <div class="hint">TAP SIDE: MOVE • SWIPE UP: SPIN • SWIPE DOWN: DROP</div>
 
   <button id="mute-btn">♪ ON</button>
 
@@ -219,14 +231,12 @@ const PIECES = {
   S:[[0,1,1],[1,1,0],[0,0,0]], Z:[[1,1,0],[0,1,1],[0,0,0]], J:[[1,0,0],[1,1,1],[0,0,0]], L:[[0,0,1],[1,1,1],[0,0,0]]
 };
 
-// Canvas Setup for Background - Declared early to avoid ReferenceErrors
 const nCanvas = document.getElementById('nebula-layer');
 const nCtx = nCanvas.getContext('2d');
 const sCanvas = document.getElementById('starfield');
 const sCtx = sCanvas.getContext('2d');
 
 let stars = [], clouds = [];
-
 let board = Array.from({length: ROWS}, () => Array(COLS).fill(null));
 let current, score = 0, level = 1, lines = 0, gameRunning = false, dropTimer = 0, lastTime = 0;
 const canvas = document.getElementById('game-canvas'), ctx = canvas.getContext('2d');
@@ -237,11 +247,7 @@ function resizeCanvas() {
     block_size = Math.floor(Math.min(availableWidth / COLS, availableHeight / ROWS));
     canvas.width = COLS * block_size;
     canvas.height = ROWS * block_size;
-    
-    // Safety check for background init during early resize triggers
-    if (nCanvas && sCanvas) {
-      initBackground();
-    }
+    if (nCanvas && sCanvas) initBackground();
 }
 
 window.addEventListener('resize', resizeCanvas);
@@ -290,7 +296,7 @@ function move(dx, dy) {
 
 function hardDrop() {
   if (!current) return;
-  while (move(0, 1)) { /* keep moving down */ }
+  while (move(0, 1)) { /* loop */ }
   drop();
 }
 
@@ -314,9 +320,7 @@ function drop() {
 function getGhostPosition() {
   if (!current) return 0;
   let ghostY = current.y;
-  while (isValid(current, 0, ghostY - current.y + 1)) {
-    ghostY++;
-  }
+  while (isValid(current, 0, ghostY - current.y + 1)) ghostY++;
   return ghostY;
 }
 
@@ -343,8 +347,6 @@ function updateUI() {
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  // Board backdrop for blurring
   ctx.fillStyle = 'rgba(0, 5, 10, 0.25)';
   ctx.fillRect(0,0, canvas.width, canvas.height);
 
@@ -357,7 +359,6 @@ function draw() {
     current.matrix.forEach((row, y) => row.forEach((v, j) => {
       if (v) drawGlassBrick(current.x + j, ghostY + y, current.type, true, current.seed + (y*j));
     }));
-
     current.matrix.forEach((row, y) => row.forEach((v, j) => {
       if (v) drawGlassBrick(current.x + j, current.y + y, current.type, false, current.seed + (y*j));
     }));
@@ -368,10 +369,8 @@ function drawGlassBrick(x, y, type, isGhost, seed) {
   const [c1, c2] = VIBRANT_COLORS[type];
   const px = x * block_size, py = y * block_size;
   const size = block_size - 1;
-
   ctx.save();
   ctx.translate(px, py);
-
   if (isGhost) {
     ctx.strokeStyle = c1;
     ctx.globalAlpha = 0.3;
@@ -382,42 +381,19 @@ function drawGlassBrick(x, y, type, isGhost, seed) {
     ctx.roundRect(1, 1, size - 1, size - 1, 3);
     ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
     ctx.fill();
-
     const time = Date.now() * 0.0008; 
-    
     const offsetX = (Math.sin(seed + time) * 0.4 + Math.cos(seed * 1.5 + time * 1.2) * 0.2) * size;
     const offsetY = (Math.cos(seed + time * 0.7) * 0.4 + Math.sin(seed * 0.8 + time * 1.1) * 0.2) * size;
-    
-    const grad = ctx.createRadialGradient(
-      size/2 + offsetX, size/2 + offsetY, 0,
-      size/2, size/2, size * 1.1
-    );
-    grad.addColorStop(0, c1);
-    grad.addColorStop(0.5, c2);
-    grad.addColorStop(1, 'rgba(0,0,0,0.6)');
-    
-    ctx.globalAlpha = 0.85; 
-    ctx.fillStyle = grad;
-    ctx.fill();
-
+    const grad = ctx.createRadialGradient(size/2 + offsetX, size/2 + offsetY, 0, size/2, size/2, size * 1.1);
+    grad.addColorStop(0, c1); grad.addColorStop(0.5, c2); grad.addColorStop(1, 'rgba(0,0,0,0.6)');
+    ctx.globalAlpha = 0.85; ctx.fillStyle = grad; ctx.fill();
     ctx.globalAlpha = 1;
     const edgeGrad = ctx.createLinearGradient(0, 0, size, size);
     edgeGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
     edgeGrad.addColorStop(0.2, 'rgba(255, 255, 255, 0.3)');
     edgeGrad.addColorStop(0.8, 'rgba(0, 0, 0, 0.2)');
     edgeGrad.addColorStop(1, 'rgba(255, 255, 255, 0.6)');
-    
-    ctx.strokeStyle = edgeGrad;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(size * 0.15, size * 0.15);
-    ctx.lineTo(size * 0.45, size * 0.15);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.stroke();
+    ctx.strokeStyle = edgeGrad; ctx.lineWidth = 1; ctx.stroke();
   }
   ctx.restore();
 }
@@ -446,18 +422,13 @@ function endGame() {
   document.getElementById('gameover-screen').classList.remove('hidden');
 }
 
-// Interaction
-let touchStart = null, touchStartTime = 0;
-let lastTapTime = 0;
+// Improved Interaction - Swipe Up to Rotate
+let touchStart = null;
 const interactionZone = document.getElementById('interaction-zone');
 
 interactionZone.addEventListener('touchstart', e => {
   const t = e.touches[0];
   touchStart = { x: t.clientX, y: t.clientY };
-  touchStartTime = Date.now();
-  const now = Date.now();
-  if (now - lastTapTime < 300) { rotate(); lastTapTime = 0; } 
-  else { lastTapTime = now; }
 }, {passive: false});
 
 interactionZone.addEventListener('touchend', e => {
@@ -465,12 +436,19 @@ interactionZone.addEventListener('touchend', e => {
   const t = e.changedTouches[0];
   const dx = t.clientX - touchStart.x;
   const dy = t.clientY - touchStart.y;
-  if (Math.abs(dx) > 30 || Math.abs(dy) > 30) {
-    if (Math.abs(dx) > Math.abs(dy)) { move(dx > 0 ? 1 : -1, 0); } 
-    else if (dy > 30) { hardDrop(); }
+  
+  if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
+    if (Math.abs(dy) > Math.abs(dx)) {
+      if (dy < -30) rotate(); // Swipe Up to Spin
+      else if (dy > 30) hardDrop(); // Swipe Down to Drop
+    } else {
+      move(dx > 0 ? 1 : -1, 0); // Horizontal Swipes move
+    }
   } else {
+    // Taps move pieces left/right
     const screenWidth = window.innerWidth;
-    if (t.clientX < screenWidth / 2) { move(-1, 0); } else { move(1, 0); }
+    if (t.clientX < screenWidth / 2) move(-1, 0); 
+    else move(1, 0);
   }
   touchStart = null;
 }, {passive: false});
@@ -479,15 +457,14 @@ function initBackground() {
   if (!nCanvas || !sCanvas) return;
   nCanvas.width = sCanvas.width = window.innerWidth;
   nCanvas.height = sCanvas.height = window.innerHeight;
-  
-  stars = Array.from({length: 150}, () => ({
+  stars = Array.from({length: 120}, () => ({
     x: (Math.random() - 0.5) * sCanvas.width,
     y: (Math.random() - 0.5) * sCanvas.height,
     z: Math.random() * sCanvas.width,
     pz: 0,
-    brightness: 0.5 + Math.random() * 0.5
+    brightness: 0.5 + Math.random() * 0.5,
+    trailLen: 1 + Math.random() * 5 // Randomized trail length
   }));
-
   clouds = Array.from({length: 8}, () => ({
     x: Math.random() * nCanvas.width, y: Math.random() * nCanvas.height,
     r: Math.random() * 500 + 300, 
@@ -499,81 +476,63 @@ function initBackground() {
 function animateBackground() {
   sCtx.fillStyle = "black";
   sCtx.fillRect(0, 0, sCanvas.width, sCanvas.height);
-  
-  const centerX = sCanvas.width / 2;
-  const centerY = sCanvas.height / 2;
+  const centerX = sCanvas.width / 2, centerY = sCanvas.height / 2;
   const gameRect = canvas.getBoundingClientRect();
 
   stars.forEach(s => {
     s.pz = s.z;
-    s.z -= 4; // Forward speed
+    s.z -= 4; 
     if (s.z <= 1) {
       s.z = sCanvas.width;
       s.x = (Math.random() - 0.5) * sCanvas.width;
       s.y = (Math.random() - 0.5) * sCanvas.height;
       s.pz = s.z;
     }
-
-    // Projection
     const sx = (s.x / s.z) * centerX + centerX;
     const sy = (s.y / s.z) * centerY + centerY;
-    const px = (s.x / s.pz) * centerX + centerX;
-    const py = (s.y / s.pz) * centerY + centerY;
-
-    const size = (1 - s.z / sCanvas.width) * 3;
+    const px = (s.x / (s.z + s.trailLen * 4)) * centerX + centerX; // Varied trail
+    const py = (s.y / (s.z + s.trailLen * 4)) * centerY + centerY;
+    const size = (1 - s.z / sCanvas.width) * 2;
     const isUnderBoard = (sx > gameRect.left && sx < gameRect.right && sy > gameRect.top && sy < gameRect.bottom);
 
-    sCtx.beginPath();
     if (isUnderBoard) {
-      // Frosted/Blurred Star under board
-      sCtx.globalAlpha = 0.2;
-      sCtx.strokeStyle = "white";
-      sCtx.lineWidth = size * 3;
+      sCtx.beginPath(); sCtx.globalAlpha = 0.15; sCtx.strokeStyle = "white"; sCtx.lineWidth = size * 2;
+      sCtx.moveTo(px, py); sCtx.lineTo(sx, sy); sCtx.stroke();
     } else {
-      // Vibrant Star with Trail
-      sCtx.globalAlpha = s.brightness;
-      sCtx.strokeStyle = `rgba(255, 255, 255, ${s.brightness})`;
-      sCtx.lineWidth = size;
-      
-      // Subtle Glow for brighter stars
-      if (s.brightness > 0.8) {
-        sCtx.shadowBlur = 8;
-        sCtx.shadowColor = "white";
-      }
+      const aberration = (1 - s.z / sCanvas.width) * 4; 
+      sCtx.beginPath(); sCtx.globalAlpha = s.brightness * 0.5; sCtx.strokeStyle = "red"; sCtx.lineWidth = size;
+      sCtx.moveTo(px - aberration, py); sCtx.lineTo(sx - aberration, sy); sCtx.stroke();
+      sCtx.beginPath(); sCtx.strokeStyle = "cyan"; sCtx.moveTo(px + aberration, py); sCtx.lineTo(sx + aberration, sy); sCtx.stroke();
+      sCtx.beginPath(); sCtx.globalAlpha = s.brightness; sCtx.strokeStyle = "white"; sCtx.lineWidth = size;
+      if (s.brightness > 0.8) { sCtx.shadowBlur = 5; sCtx.shadowColor = "white"; }
+      sCtx.moveTo(px, py); sCtx.lineTo(sx, sy); sCtx.stroke();
     }
-
-    sCtx.moveTo(px, py);
-    sCtx.lineTo(sx, sy);
-    sCtx.stroke();
-    sCtx.shadowBlur = 0; // Reset
-    sCtx.globalAlpha = 1.0;
+    sCtx.shadowBlur = 0; sCtx.globalAlpha = 1.0;
   });
 
   nCtx.clearRect(0, 0, nCanvas.width, nCanvas.height);
   nCtx.globalCompositeOperation = 'screen';
   clouds.forEach(c => {
     c.x += c.vx; c.y += c.vy;
-    if(c.x < -c.r) c.x = nCanvas.width + c.r;
-    if(c.x > nCanvas.width + c.r) c.x = -c.r;
+    if(c.x < -c.r) c.x = nCanvas.width + c.r; else if(c.x > nCanvas.width + c.r) c.x = -c.r;
     const g = nCtx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
     g.addColorStop(0, c.c); g.addColorStop(1, 'transparent');
-    nCtx.fillStyle = g;
-    nCtx.beginPath(); nCtx.arc(c.x, c.y, c.r, 0, Math.PI*2); nCtx.fill();
+    nCtx.fillStyle = g; nCtx.beginPath(); nCtx.arc(c.x, c.y, c.r, 0, Math.PI*2); nCtx.fill();
   });
-  
   requestAnimationFrame(animateBackground);
 }
 
-// Audio
+// Audio - Updated Landau SFX
 let audioCtx, muted = false;
 function sfx(type) {
   if (muted || !audioCtx) return;
   const o = audioCtx.createOscillator(), g = audioCtx.createGain();
   o.connect(g); g.connect(audioCtx.destination);
-  o.frequency.value = type === 'move' ? 200 : type === 'clear' ? 600 : 100;
-  g.gain.setValueAtTime(0.05, audioCtx.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-  o.start(); o.stop(audioCtx.currentTime + 0.1);
+  if (type === 'move') { o.frequency.value = 180; g.gain.setValueAtTime(0.03, audioCtx.currentTime); }
+  else if (type === 'land') { o.frequency.value = 80; g.gain.setValueAtTime(0.06, audioCtx.currentTime); }
+  else if (type === 'clear') { o.frequency.value = 520; g.gain.setValueAtTime(0.08, audioCtx.currentTime); }
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+  o.start(); o.stop(audioCtx.currentTime + 0.15);
 }
 
 document.getElementById('start-btn').onclick = () => {
@@ -582,8 +541,7 @@ document.getElementById('start-btn').onclick = () => {
 };
 document.getElementById('restart-btn').onclick = startGame;
 document.getElementById('mute-btn').onclick = (e) => {
-  muted = !muted;
-  e.target.textContent = muted ? '♪ OFF' : '♪ ON';
+  muted = !muted; e.target.textContent = muted ? '♪ OFF' : '♪ ON';
 };
 
 document.addEventListener('keydown', e => {
@@ -595,10 +553,7 @@ document.addEventListener('keydown', e => {
   if (e.key === ' ') { e.preventDefault(); hardDrop(); }
 });
 
-window.onload = function() {
-  initBackground();
-  animateBackground();
-};
+window.onload = function() { initBackground(); animateBackground(); };
 </script>
 </body>
 </html>
