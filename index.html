@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>GLASS TETRIS</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;}
+body{padding:0;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);}
 
 #bg{
   position:fixed;inset:0;z-index:0;
@@ -42,7 +43,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
 #hud{
   width:100%;
   display:flex;align-items:center;justify-content:space-between;
-  padding:6px 8px 3px;
+  padding:max(env(safe-area-inset-top,0px),6px) 8px 3px;
   flex-shrink:0;
   gap:4px;
 }
@@ -333,13 +334,13 @@ const COLS=10,ROWS=20;
 let B=30; // block size
 
 const CL=[null,
-  {h:'#6fffff',m:'#00d4ef',d:'#005060',e:'rgba(0,210,240,0.18)'},
-  {h:'#ffcc66',m:'#ff8800',d:'#7f3800',e:'rgba(255,136,0,0.18)'},
-  {h:'#f080ff',m:'#cc40ee',d:'#5a0077',e:'rgba(200,50,240,0.18)'},
-  {h:'#ff7070',m:'#ff1840',d:'#800010',e:'rgba(255,20,60,0.18)'},
-  {h:'#ffff66',m:'#f0cc00',d:'#705800',e:'rgba(240,200,0,0.18)'},
-  {h:'#70ffa0',m:'#00e060',d:'#004828',e:'rgba(0,210,80,0.18)'},
-  {h:'#88bbff',m:'#2868ff',d:'#0e1e60',e:'rgba(40,90,255,0.18)'},
+  {h:'#00ffff',m:'#00cfee',d:'#004f70',e:'rgba(0,220,255,0.3)'},   // teal
+  {h:'#ff9900',m:'#ff6600',d:'#7f2800',e:'rgba(255,120,0,0.3)'},   // orange
+  {h:'#ee00ff',m:'#cc00ee',d:'#5a006f',e:'rgba(220,0,255,0.3)'},   // purple
+  {h:'#ff1111',m:'#ee0030',d:'#800010',e:'rgba(255,10,40,0.3)'},   // red
+  {h:'#ffee00',m:'#ffcc00',d:'#705000',e:'rgba(255,220,0,0.3)'},   // yellow
+  {h:'#00ff55',m:'#00dd44',d:'#004820',e:'rgba(0,230,70,0.3)'},    // green
+  {h:'#2288ff',m:'#1155ff',d:'#0a1a80',e:'rgba(30,100,255,0.3)'},  // blue
 ];
 
 const SH=[null,
@@ -380,15 +381,17 @@ function drawBlock(ctx,gx2,gy2,cid,al=1){
   if(!cid)return;
   const c=CL[cid],p=1.2,s=B;
   const x=gx2*s+p,y=gy2*s+p,w=s-p*2,h=s-p*2,r=Math.max(3,w*0.12);
+  const bv=Math.max(3,w*0.18); // bevel thickness
+
   ctx.save();
   rr(ctx,x,y,w,h,r);ctx.clip();
 
-  // frosted glass base — semi-transparent for nebula to show through
+  // frosted glass base
   const bg=ctx.createLinearGradient(x,y,x+w*0.3,y+h);
-  bg.addColorStop(0,c.h+'48');
-  bg.addColorStop(0.35,c.m+'38');
-  bg.addColorStop(0.75,c.m+'42');
-  bg.addColorStop(1,c.d+'68');
+  bg.addColorStop(0,c.h+'bb');
+  bg.addColorStop(0.35,c.m+'99');
+  bg.addColorStop(0.75,c.m+'aa');
+  bg.addColorStop(1,c.d+'cc');
   ctx.globalAlpha=al;
   ctx.fillStyle=bg;ctx.fillRect(x,y,w,h);
 
@@ -402,39 +405,52 @@ function drawBlock(ctx,gx2,gy2,cid,al=1){
     ctx.fillStyle=rg;ctx.fillRect(x,y,w,h);
   }
 
-  // big top-left specular gleam
-  const hl=ctx.createRadialGradient(x+w*0.3,y+h*0.18,0,x+w*0.3,y+h*0.18,w*0.6);
-  hl.addColorStop(0,'rgba(255,255,255,0.82)');
-  hl.addColorStop(0.25,'rgba(255,255,255,0.28)');
-  hl.addColorStop(0.6,'rgba(255,255,255,0.06)');
-  hl.addColorStop(1,'rgba(255,255,255,0.0)');
-  ctx.fillStyle=hl;ctx.fillRect(x,y,w*0.75,h*0.62);
+  // ── BEVEL: bright top+left, dark bottom+right ──
+  // top bevel
+  ctx.beginPath();
+  ctx.moveTo(x,y);ctx.lineTo(x+w,y);
+  ctx.lineTo(x+w-bv,y+bv);ctx.lineTo(x+bv,y+bv);ctx.closePath();
+  const bt=ctx.createLinearGradient(x,y,x,y+bv);
+  bt.addColorStop(0,'rgba(255,255,255,0.55)');bt.addColorStop(1,'rgba(255,255,255,0.08)');
+  ctx.fillStyle=bt;ctx.fill();
 
-  // subtle colour tint reflection bottom-right
+  // left bevel
+  ctx.beginPath();
+  ctx.moveTo(x,y);ctx.lineTo(x,y+h);
+  ctx.lineTo(x+bv,y+h-bv);ctx.lineTo(x+bv,y+bv);ctx.closePath();
+  const bl=ctx.createLinearGradient(x,y,x+bv,y);
+  bl.addColorStop(0,'rgba(255,255,255,0.42)');bl.addColorStop(1,'rgba(255,255,255,0.06)');
+  ctx.fillStyle=bl;ctx.fill();
+
+  // bottom bevel
+  ctx.beginPath();
+  ctx.moveTo(x,y+h);ctx.lineTo(x+w,y+h);
+  ctx.lineTo(x+w-bv,y+h-bv);ctx.lineTo(x+bv,y+h-bv);ctx.closePath();
+  const bb=ctx.createLinearGradient(x,y+h-bv,x,y+h);
+  bb.addColorStop(0,'rgba(0,0,0,0.08)');bb.addColorStop(1,'rgba(0,0,0,0.46)');
+  ctx.fillStyle=bb;ctx.fill();
+
+  // right bevel
+  ctx.beginPath();
+  ctx.moveTo(x+w,y);ctx.lineTo(x+w,y+h);
+  ctx.lineTo(x+w-bv,y+h-bv);ctx.lineTo(x+w-bv,y+bv);ctx.closePath();
+  const br=ctx.createLinearGradient(x+w-bv,y,x+w,y);
+  br.addColorStop(0,'rgba(0,0,0,0.06)');br.addColorStop(1,'rgba(0,0,0,0.40)');
+  ctx.fillStyle=br;ctx.fill();
+
+  // top-left specular gleam
+  const hl=ctx.createRadialGradient(x+w*0.32,y+h*0.2,0,x+w*0.32,y+h*0.2,w*0.55);
+  hl.addColorStop(0,'rgba(255,255,255,0.78)');
+  hl.addColorStop(0.22,'rgba(255,255,255,0.22)');
+  hl.addColorStop(0.6,'rgba(255,255,255,0.04)');
+  hl.addColorStop(1,'rgba(255,255,255,0.0)');
+  ctx.fillStyle=hl;ctx.fillRect(x,y,w*0.72,h*0.60);
+
+  // colour tint reflection bottom-right
   const cr=ctx.createRadialGradient(x+w*0.8,y+h*0.85,0,x+w*0.8,y+h*0.85,w*0.5);
-  cr.addColorStop(0,c.h+'22');cr.addColorStop(1,'rgba(0,0,0,0.0)');
+  cr.addColorStop(0,c.h+'1e');cr.addColorStop(1,'rgba(0,0,0,0.0)');
   ctx.fillStyle=cr;ctx.fillRect(x+w*0.3,y+h*0.4,w*0.7,h*0.6);
 
-  // bottom shadow
-  const bs=ctx.createLinearGradient(x,y+h*0.5,x,y+h);
-  bs.addColorStop(0,'rgba(0,0,0,0.0)');bs.addColorStop(1,'rgba(0,0,0,0.32)');
-  ctx.fillStyle=bs;ctx.fillRect(x,y,w,h);
-  ctx.restore();
-
-  // glowing border
-  ctx.save();
-  ctx.globalAlpha=al*0.8;
-  ctx.strokeStyle=c.h;ctx.lineWidth=1;
-  ctx.shadowColor=c.h;ctx.shadowBlur=12;
-  rr(ctx,x+0.5,y+0.5,w-1,h-1,r);ctx.stroke();
-  ctx.restore();
-
-  // outer colour aura
-  ctx.save();
-  ctx.globalAlpha=al*0.12;
-  ctx.strokeStyle=c.h;ctx.lineWidth=4;
-  ctx.shadowColor=c.h;ctx.shadowBlur=24;
-  rr(ctx,x-1,y-1,w+2,h+2,r+1);ctx.stroke();
   ctx.restore();
 }
 
