@@ -13,6 +13,7 @@
     --glow-cyan: #00f5ff;
     --glow-pink: #ff007a;
     --text: #c8f0f5;
+    --btn-bg: rgba(255, 255, 255, 0.08);
   }
 
   * { 
@@ -33,12 +34,25 @@
     touch-action: none;
   }
 
-  #starfield {
+  #background-container {
     position: fixed;
     inset: 0;
     z-index: 1;
+    background: #000408;
     pointer-events: none;
-    opacity: 0.2;
+  }
+
+  #nebula-layer {
+    position: absolute;
+    inset: 0;
+    opacity: 0.6;
+    filter: blur(60px);
+  }
+
+  #starfield {
+    position: absolute;
+    inset: 0;
+    opacity: 0.8;
   }
 
   .game-container {
@@ -49,17 +63,66 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: radial-gradient(circle at 50% 50%, #081015 0%, #010203 100%);
+    background: radial-gradient(circle at 50% 50%, rgba(0, 20, 40, 0.2) 0%, rgba(0, 0, 0, 0.7) 100%);
   }
 
   #game-canvas {
     display: block;
-    background: var(--mortar);
-    max-height: 100%;
-    max-width: 100%;
+    background: rgba(5, 10, 15, 0.7);
+    max-height: 85%;
+    max-width: 95%;
     box-shadow: 0 0 100px rgba(0,0,0,0.9);
-    border: 3px solid #111417;
-    pointer-events: none; /* Let touches pass to the container for gesture handling */
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+    backdrop-filter: blur(8px);
+  }
+
+  /* Physical Controls */
+  .controls {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 180px;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px 20px 20px;
+    pointer-events: none;
+  }
+
+  .control-group {
+    display: flex;
+    gap: 15px;
+    pointer-events: auto;
+    align-items: flex-end;
+  }
+
+  .ctrl-btn {
+    width: 65px;
+    height: 65px;
+    background: var(--btn-bg);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    backdrop-filter: blur(5px);
+    transition: transform 0.1s, background 0.1s;
+    user-select: none;
+  }
+
+  .ctrl-btn:active {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(0.9);
+  }
+
+  .ctrl-btn.large {
+    width: 75px;
+    height: 75px;
+    background: rgba(0, 245, 255, 0.15);
+    border-color: var(--glow-cyan);
   }
 
   .hud {
@@ -95,25 +158,25 @@
   .overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0,1,3,0.96);
-    backdrop-filter: blur(12px);
+    background: rgba(0,1,3,0.95);
+    backdrop-filter: blur(15px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 50; /* Higher than HUD */
+    z-index: 200;
     text-align: center;
     padding: 20px;
-    pointer-events: auto; /* Important for clicking start */
+    pointer-events: auto;
   }
 
   .overlay h2 {
     font-family: 'Orbitron', sans-serif;
-    font-size: 36px;
+    font-size: 32px;
     color: var(--glow-pink);
     text-shadow: 0 0 25px var(--glow-pink);
-    margin-bottom: 30px;
-    letter-spacing: 10px;
+    margin-bottom: 20px;
+    letter-spacing: 6px;
   }
 
   .btn {
@@ -127,32 +190,30 @@
     letter-spacing: 3px;
     font-weight: bold;
     transition: all 0.3s;
-    pointer-events: auto; /* Ensure buttons are clickable */
-    position: relative;
-    z-index: 60;
   }
 
-  .btn:active {
-    background: #fff;
-    color: #000;
-  }
-
+  .btn:active { background: #fff; color: #000; }
   .hidden { display: none !important; }
 
   #mute-btn {
     position: absolute;
-    bottom: 25px;
-    right: 25px;
-    z-index: 100; /* Top most */
-    font-size: 11px;
-    padding: 10px 15px;
-    background: rgba(0,0,0,0.7);
+    top: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    font-size: 10px;
+    padding: 8px 12px;
+    background: rgba(0,0,0,0.5);
     border: 1px solid rgba(255,255,255,0.1);
   }
 </style>
 </head>
 <body>
-<canvas id="starfield"></canvas>
+
+<div id="background-container">
+  <canvas id="nebula-layer"></canvas>
+  <canvas id="starfield"></canvas>
+</div>
 
 <div class="game-container" id="touch-zone">
   <div class="hud left">
@@ -169,9 +230,21 @@
 
   <button id="mute-btn" class="btn">♪ ON</button>
 
+  <div class="controls">
+    <div class="control-group">
+      <div class="ctrl-btn" id="btn-left">←</div>
+      <div class="ctrl-btn" id="btn-right">→</div>
+      <div class="ctrl-btn" id="btn-down">↓</div>
+    </div>
+    <div class="control-group">
+      <div class="ctrl-btn large" id="btn-rotate">↻</div>
+      <div class="ctrl-btn" id="btn-drop">⤓</div>
+    </div>
+  </div>
+
   <div class="overlay" id="start-screen">
     <h2>GLASS BRICKS</h2>
-    <p style="margin-bottom: 30px; color: #667; font-size: 11px; letter-spacing: 2px;">TURBULENT ARTISAN GLASS</p>
+    <p style="margin-bottom: 30px; color: #889; font-size: 11px; letter-spacing: 2px;">REFINED OPTICS EDITION</p>
     <button class="btn" id="start-btn">ENGAGE</button>
   </div>
 
@@ -204,8 +277,8 @@ let current, score = 0, level = 1, lines = 0, gameRunning = false, dropTimer = 0
 const canvas = document.getElementById('game-canvas'), ctx = canvas.getContext('2d');
 
 function resizeCanvas() {
-    const availableHeight = window.innerHeight * 0.92;
-    const availableWidth = window.innerWidth * 0.92;
+    const availableHeight = window.innerHeight * 0.70;
+    const availableWidth = window.innerWidth * 0.90;
     block_size = Math.floor(Math.min(availableWidth / COLS, availableHeight / ROWS));
     canvas.width = COLS * block_size;
     canvas.height = ROWS * block_size;
@@ -301,20 +374,17 @@ function updateUI() {
 function draw() {
   if (!ctx) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#050709';
+  
+  ctx.fillStyle = 'rgba(5, 10, 20, 0.4)';
   ctx.fillRect(0,0,canvas.width, canvas.height);
 
   if (board) {
     board.forEach((row, y) => {
-      if (row) {
-        row.forEach((v, x) => { 
-          if (v) drawGlassBrick(x, y, v.type, false, v.seed); 
-        });
-      }
+      row?.forEach((v, x) => { if (v) drawGlassBrick(x, y, v.type, false, v.seed); });
     });
   }
   
-  if (current && current.matrix) {
+  if (current) {
     const ghostY = getGhostPosition();
     current.matrix.forEach((row, y) => row.forEach((v, j) => {
       if (v) drawGlassBrick(current.x + j, ghostY + y, current.type, true, current.seed + (y*j));
@@ -328,78 +398,39 @@ function draw() {
 
 function drawGlassBrick(x, y, type, isGhost = false, seed = 0) {
   const baseColor = COLORS[type];
-  const px = x * block_size;
-  const py = y * block_size;
-  const gap = 2; 
-  const size = block_size - gap;
+  const px = x * block_size, py = y * block_size;
+  const gap = 2, size = block_size - gap;
 
   ctx.save();
   ctx.translate(px + gap/2, py + gap/2);
-
-  ctx.beginPath();
-  ctx.rect(0, 0, size, size);
-  ctx.clip();
+  ctx.beginPath(); ctx.rect(0, 0, size, size); ctx.clip();
 
   if (isGhost) ctx.globalAlpha = 0.15;
 
+  // Background
   const tX = (Math.sin(seed * 0.7) * 0.4 + 0.5) * size;
   const tY = (Math.cos(seed * 1.3) * 0.4 + 0.5) * size;
   const bgGrad = ctx.createRadialGradient(tX, tY, size * 0.1, size/2, size/2, size * 1.5);
   bgGrad.addColorStop(0, baseColor); 
-  bgGrad.addColorStop(0.4, baseColor);
+  bgGrad.addColorStop(0.5, baseColor);
   bgGrad.addColorStop(1, '#000'); 
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, size, size);
 
-  ctx.globalCompositeOperation = 'screen';
-  for(let i=0; i<3; i++) {
-      const offsetX = ((seed * (i+2)) % 0.8) * size;
-      const offsetY = ((seed / (i+2)) % 0.8) * size;
-      const radius = (0.2 + (i*0.1)) * size;
-      ctx.fillStyle = 'rgba(255,255,255,0.04)';
-      ctx.beginPath();
-      ctx.ellipse(offsetX, offsetY, radius * 1.5, radius * 0.8, seed + i, 0, Math.PI * 2);
-      ctx.fill();
-  }
+  // Shine from top-left
+  const edgeShine = ctx.createLinearGradient(0, 0, size, size);
+  edgeShine.addColorStop(0, 'rgba(255,255,255,0.95)');
+  edgeShine.addColorStop(0.1, 'rgba(255,255,255,0.4)');
+  edgeShine.addColorStop(0.4, 'rgba(255,255,255,0)');
+  ctx.fillStyle = edgeShine;
+  ctx.fillRect(1, 1, size-2, 1.5); 
+  ctx.fillRect(1, 1, 1.5, size-2); 
 
-  ctx.globalCompositeOperation = 'soft-light';
-  const refractionGrad = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2.2);
-  refractionGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
-  refractionGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-  ctx.fillStyle = refractionGrad;
-  ctx.beginPath();
-  ctx.arc(size/2, size/2, size/2.2, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.globalCompositeOperation = 'source-over';
-  const drawBevel = (inset, shadowCol, lightCol) => {
-    ctx.fillStyle = shadowCol;
-    ctx.fillRect(inset, size-inset-2, size-inset*2, 2); 
-    ctx.fillRect(size-inset-2, inset, 2, size-inset*2); 
-    ctx.fillStyle = lightCol;
-    ctx.fillRect(inset, inset, size-inset*2, 2); 
-    ctx.fillRect(inset, inset, 2, size-inset*2); 
-  };
-  drawBevel(0, 'rgba(0,0,0,0.8)', 'rgba(255,255,255,0.6)');
-  drawBevel(3, 'rgba(0,0,0,0.4)', 'rgba(255,255,255,0.15)');
-
-  const shineGrad = ctx.createLinearGradient(0, 0, size * 0.5, size * 0.5);
-  shineGrad.addColorStop(0, 'rgba(255,255,255,0.9)');
-  shineGrad.addColorStop(0.2, 'rgba(255,255,255,0.3)');
-  shineGrad.addColorStop(0.6, 'rgba(255,255,255,0)');
-  ctx.fillStyle = shineGrad;
-  ctx.fillRect(1, 1, size-2, size-2);
-
-  ctx.beginPath();
-  ctx.strokeStyle = 'rgba(255,255,255,0.8)';
-  ctx.lineWidth = 1;
-  ctx.moveTo(size * 0.05, size * 0.1);
-  ctx.quadraticCurveTo(size * 0.1, size * 0.05, size * 0.25, size * 0.05);
-  ctx.stroke();
-
-  ctx.strokeStyle = 'rgba(0,0,0,1)';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(0, 0, size, size);
+  // Inner Bevels
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.strokeRect(3, 3, size-6, size-6);
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+  ctx.strokeRect(size-3, size-3, -size+6, -size+6);
 
   ctx.restore();
 }
@@ -425,7 +456,7 @@ function startGame() {
 
 function endGame() {
   gameRunning = false;
-  document.getElementById('final-score').textContent = "FINAL SCORE: " + score;
+  document.getElementById('final-score').textContent = "SCORE: " + score;
   document.getElementById('gameover-screen').classList.remove('hidden');
 }
 
@@ -439,99 +470,95 @@ function sfx(type) {
   if (type === 'clear') { o.frequency.value = 520; g.gain.value = 0.06; o.start(); o.stop(audioCtx.currentTime+0.15); }
 }
 
-let touchStartX = 0, touchStartY = 0;
-const touchZone = document.getElementById('touch-zone');
+// Button Events
+const bindBtn = (id, fn) => {
+  const el = document.getElementById(id);
+  const handler = (e) => { e.preventDefault(); if(gameRunning) fn(); };
+  el.addEventListener('touchstart', handler, {passive: false});
+  el.addEventListener('mousedown', handler);
+};
 
-touchZone.addEventListener('touchstart', (e) => {
-    // If we're touching a button, don't start a gesture
-    if (e.target.closest('.btn')) return;
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-}, { passive: true });
-
-touchZone.addEventListener('touchend', (e) => {
-    if (e.target.closest('.btn')) return;
-    if (!gameRunning || !current) return;
-    
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    const dx = touchEndX - touchStartX;
-    const dy = touchEndY - touchStartY;
-    const absDx = Math.abs(dx);
-    const absDy = Math.abs(dy);
-
-    if (absDx > 35 || absDy > 35) {
-        if (absDy > absDx) {
-            if (dy < -35) {
-                const m = rotate(current.matrix);
-                if (isValid(current, 0, 0, m)) { current.matrix = m; sfx('move'); }
-            } else { hardDrop(); }
-        }
-    } else {
-        if (touchStartX < window.innerWidth / 2) { move(-1, 0); } else { move(1, 0); }
-    }
-}, { passive: true });
+bindBtn('btn-left', () => move(-1, 0));
+bindBtn('btn-right', () => move(1, 0));
+bindBtn('btn-down', () => drop());
+bindBtn('btn-rotate', () => { 
+  if(!current) return;
+  const m = rotate(current.matrix); 
+  if (isValid(current,0,0,m)) { current.matrix = m; sfx('move'); }
+});
+bindBtn('btn-drop', () => hardDrop());
 
 document.addEventListener('keydown', e => {
   if (!gameRunning || !current) return;
   if (e.key === 'ArrowLeft') move(-1, 0);
   if (e.key === 'ArrowRight') move(1, 0);
   if (e.key === 'ArrowDown') drop();
-  if (e.key === 'ArrowUp') { const m = rotate(current.matrix); if (isValid(current,0,0,m)) current.matrix = m; }
+  if (e.key === 'ArrowUp') { const m = rotate(current.matrix); if (isValid(current,0,0,m)) { current.matrix = m; sfx('move'); } }
   if (e.key === ' ') hardDrop();
 });
 
-// Explicit event handlers for buttons to ensure responsiveness
 const startBtn = document.getElementById('start-btn');
 const restartBtn = document.getElementById('restart-btn');
 const muteBtn = document.getElementById('mute-btn');
 
-const handleStart = (e) => {
-  e.preventDefault();
+startBtn.onclick = () => {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
   startGame();
 };
-
-startBtn.addEventListener('click', handleStart);
-startBtn.addEventListener('touchstart', handleStart);
-
-const handleRestart = (e) => {
-  e.preventDefault();
-  startGame();
-};
-
-restartBtn.addEventListener('click', handleRestart);
-restartBtn.addEventListener('touchstart', handleRestart);
-
-const handleMute = (e) => {
-  e.preventDefault();
-  e.stopPropagation();
+restartBtn.onclick = startGame;
+muteBtn.onclick = () => {
   muted = !muted;
   muteBtn.textContent = muted ? '♪ OFF' : '♪ ON';
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 };
 
-muteBtn.addEventListener('click', handleMute);
-muteBtn.addEventListener('touchstart', handleMute);
+// BACKGROUND FIX
+const nCanvas = document.getElementById('nebula-layer');
+const nCtx = nCanvas.getContext('2d');
+const sCanvas = document.getElementById('starfield');
+const sCtx = sCanvas.getContext('2d');
 
-const sc = document.getElementById('starfield');
-const sctx = sc.getContext('2d');
-let stars = [];
-function resizeStars() { sc.width = window.innerWidth; sc.height = window.innerHeight; }
-window.addEventListener('resize', resizeStars);
-resizeStars();
-for(let i=0; i<80; i++) stars.push({x:Math.random(), y:Math.random(), s:Math.random()});
-function animateStars() {
-  sctx.clearRect(0,0,sc.width,sc.height);
-  stars.forEach(s => {
-    s.y += s.s * 0.0003; if (s.y > 1) s.y = 0;
-    sctx.fillStyle = `rgba(255, 255, 255, ${s.s * 0.15})`;
-    sctx.fillRect(s.x*sc.width, s.y*sc.height, 1, 1);
-  });
-  requestAnimationFrame(animateStars);
+let stars = [], nebulas = [];
+
+function initBackground() {
+  nCanvas.width = sCanvas.width = window.innerWidth;
+  nCanvas.height = sCanvas.height = window.innerHeight;
+  
+  stars = [];
+  for(let i=0; i<150; i++) {
+    stars.push({ x: Math.random() * nCanvas.width, y: Math.random() * nCanvas.height, size: Math.random() * 1.5, speed: Math.random() * 0.05 + 0.01, op: Math.random() });
+  }
+
+  nebulas = [];
+  const colors = ['#003366', '#330066', '#006644', '#660022'];
+  for(let i=0; i<8; i++) {
+    nebulas.push({ x: Math.random() * nCanvas.width, y: Math.random() * nCanvas.height, r: Math.random() * 400 + 300, color: colors[i % colors.length] });
+  }
 }
-animateStars();
+
+function drawNebulas() {
+  nCtx.clearRect(0, 0, nCanvas.width, nCanvas.height);
+  nebulas.forEach(n => {
+    const g = nCtx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
+    g.addColorStop(0, n.color);
+    g.addColorStop(1, 'transparent');
+    nCtx.fillStyle = g;
+    nCtx.beginPath(); nCtx.arc(n.x, n.y, n.r, 0, Math.PI * 2); nCtx.fill();
+  });
+}
+
+function animateBackground() {
+  sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
+  stars.forEach(s => {
+    s.y += s.speed; if (s.y > sCanvas.height) s.y = 0;
+    s.op += (Math.random() - 0.5) * 0.02;
+    sCtx.fillStyle = `rgba(255, 255, 255, ${Math.max(0.2, Math.min(0.8, s.op))})`;
+    sCtx.beginPath(); sCtx.arc(s.x, s.y, s.size, 0, Math.PI * 2); sCtx.fill();
+  });
+  requestAnimationFrame(animateBackground);
+}
+
+window.addEventListener('resize', () => { initBackground(); drawNebulas(); });
+initBackground(); drawNebulas(); animateBackground();
 draw();
 </script>
 </body>
