@@ -38,40 +38,44 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
   display:flex;flex-direction:column;align-items:center;
 }
 
+/* ── compact HUD bar sits flush above the game canvas ── */
 #hud{
   width:100%;
-  display:flex;justify-content:space-between;align-items:center;
-  padding:10px 14px 5px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 8px 3px;
   flex-shrink:0;
-  max-width:520px;
+  gap:4px;
 }
+/* each pill is tiny — label + value on one line */
 .hud-box{
-  background:rgba(0,0,0,0.35);
-  border:1px solid rgba(255,255,255,0.14);
-  border-radius:14px;
-  padding:6px 16px;
+  background:rgba(0,0,0,0.40);
+  border:1px solid rgba(255,255,255,0.13);
+  border-radius:8px;
+  padding:3px 9px;
   backdrop-filter:blur(20px);
-  text-align:center;
-  min-width:80px;
-  box-shadow:0 2px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  display:flex;align-items:center;gap:5px;
+  white-space:nowrap;
+  box-shadow:0 1px 8px rgba(0,0,0,0.5);
+  flex:1;justify-content:center;
 }
 .hud-label{
   font-family:'Orbitron',sans-serif;
-  font-size:7px;letter-spacing:2.5px;
-  color:rgba(255,255,255,0.35);
-  text-transform:uppercase;margin-bottom:2px;
+  font-size:6px;letter-spacing:2px;
+  color:rgba(255,255,255,0.38);
+  text-transform:uppercase;
 }
 .hud-val{
   font-family:'Orbitron',sans-serif;
-  font-size:20px;font-weight:900;color:#fff;
-  text-shadow:0 0 12px rgba(0,230,255,0.9),0 0 28px rgba(0,230,255,0.4);
+  font-size:13px;font-weight:900;color:#fff;
+  text-shadow:0 0 10px rgba(0,230,255,0.9),0 0 22px rgba(0,230,255,0.4);
 }
 #logo{
   font-family:'Orbitron',sans-serif;
-  font-size:12px;font-weight:900;letter-spacing:5px;
+  font-size:9px;font-weight:900;letter-spacing:4px;
   background:linear-gradient(130deg,#00e5ff 0%,#bf5fff 50%,#ff5f7e 100%);
   -webkit-background-clip:text;background-clip:text;color:transparent;
   animation:logoPulse 3s ease-in-out infinite;
+  white-space:nowrap;flex-shrink:0;
 }
 @keyframes logoPulse{
   0%,100%{filter:drop-shadow(0 0 6px rgba(0,229,255,0.8));}
@@ -92,28 +96,30 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:no
   image-rendering:pixelated;
 }
 
+/* ── NEXT piece — top-right corner of game, 2× smaller ── */
 #next-panel{
-  position:absolute;top:6px;right:6px;z-index:20;
-  background:rgba(0,0,0,0.3);
+  position:absolute;top:4px;right:4px;z-index:20;
+  background:rgba(0,0,0,0.35);
   border:1px solid rgba(255,255,255,0.12);
-  border-radius:14px;padding:8px 8px 6px;
+  border-radius:10px;padding:5px 5px 4px;
   backdrop-filter:blur(24px);
-  box-shadow:0 0 20px rgba(0,229,255,0.08);
+  box-shadow:0 0 14px rgba(0,229,255,0.07);
   text-align:center;
 }
 .np-label{
-  font-family:'Orbitron',sans-serif;font-size:7px;letter-spacing:2px;
-  color:rgba(255,255,255,0.3);margin-bottom:5px;
+  font-family:'Orbitron',sans-serif;font-size:6px;letter-spacing:1.5px;
+  color:rgba(255,255,255,0.28);margin-bottom:3px;
 }
 #ncv{display:block;margin:0 auto;}
 
-/* level display bottom-left */
+/* ── LEVEL — top-left corner of game ── */
 #lv-panel{
-  position:absolute;bottom:6px;left:6px;z-index:20;
-  background:rgba(0,0,0,0.3);
+  position:absolute;top:4px;left:4px;z-index:20;
+  background:rgba(0,0,0,0.35);
   border:1px solid rgba(255,255,255,0.12);
-  border-radius:14px;padding:6px 12px;
+  border-radius:10px;padding:4px 9px;
   backdrop-filter:blur(24px);text-align:center;
+  display:flex;align-items:center;gap:5px;
 }
 
 #flash{position:fixed;inset:0;z-index:50;pointer-events:none;opacity:0;transition:opacity 0.04s;}
@@ -215,13 +221,15 @@ TETRIS</div>
 
   <div id="game-wrap">
     <canvas id="cv"></canvas>
+    <!-- level top-left of game board -->
+    <div id="lv-panel">
+      <div class="hud-label">LV</div>
+      <div class="hud-val" id="h-level">1</div>
+    </div>
+    <!-- next piece top-right of game board, smaller canvas -->
     <div id="next-panel">
       <div class="np-label">NEXT</div>
       <canvas id="ncv"></canvas>
-    </div>
-    <div id="lv-panel">
-      <div class="hud-label">LEVEL</div>
-      <div class="hud-val" id="h-level">1</div>
     </div>
   </div>
 </div>
@@ -353,7 +361,9 @@ function resize(){
   B=Math.floor(Math.min(avH/ROWS, avW/COLS));
   B=Math.max(22,Math.min(52,B));
   gc.width=COLS*B;gc.height=ROWS*B;
-  nc.width=4*B;nc.height=4*B;
+  const NB=Math.round(B/2); // next piece canvas uses half-size blocks
+  nc.width=4*NB;nc.height=4*NB;
+  nc.dataset.nb=NB;
 }
 window.addEventListener('resize',()=>{resize();draw();});
 
@@ -556,9 +566,16 @@ function draw(){
   // next
   nx.clearRect(0,0,nc.width,nc.height);
   if(nxt){const np=SH[nxt];
+    const NB=parseInt(nc.dataset.nb)||Math.round(B/2);
     const ox=Math.floor((4-np[0].length)/2),oy=Math.floor((4-np.length)/2);
     for(let r=0;r<np.length;r++)for(let c=0;c<np[r].length;c++)
-      if(np[r][c])drawBlock(nx,ox+c,oy+r,np[r][c]);}
+      if(np[r][c]){
+        // draw with NB-sized blocks instead of B
+        const savedB=B; B=NB;
+        drawBlock(nx,ox+c,oy+r,np[r][c]);
+        B=savedB;
+      }
+  }
 }
 
 function resetDT(){
