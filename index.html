@@ -12,22 +12,98 @@ body{padding:0;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area
 
 #bg{
   position:fixed;inset:0;z-index:0;
-  background:
-    radial-gradient(ellipse 90% 70% at 15% 20%, rgba(120,0,255,0.65) 0%, transparent 58%),
-    radial-gradient(ellipse 80% 60% at 88% 72%, rgba(0,80,255,0.58) 0%, transparent 55%),
-    radial-gradient(ellipse 70% 55% at 50% 100%,rgba(255,20,100,0.52) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 45% at 92% 8%,  rgba(0,210,180,0.48) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 40% at 3%  82%,  rgba(255,110,0,0.44) 0%, transparent 48%),
-    radial-gradient(ellipse 40% 35% at 55% 45%, rgba(255,220,0,0.22) 0%, transparent 45%),
-    #03000f;
-  animation:nebShift 22s ease-in-out infinite alternate;
+  background:#03000f;
+  overflow:hidden;
 }
-@keyframes nebShift{
-  0%  {filter:hue-rotate(0deg)   brightness(1)    saturate(1.3);}
-  25% {filter:hue-rotate(25deg)  brightness(1.15) saturate(1.5);}
-  55% {filter:hue-rotate(-18deg) brightness(1.08) saturate(1.6);}
-  80% {filter:hue-rotate(10deg)  brightness(1.04) saturate(1.4);}
-  100%{filter:hue-rotate(-8deg)  brightness(0.96) saturate(1.2);}
+
+/* Each blob is a blurred radial gradient that drifts independently */
+#bg::before, #bg::after, #bg .b1, #bg .b2, #bg .b3, #bg .b4 {
+  content:'';
+  position:absolute;
+  border-radius:50%;
+  filter:blur(60px);
+  will-change:transform;
+  mix-blend-mode:screen;
+}
+
+/* Purple blob — drifts diagonally */
+#bg::before{
+  width:80vw; height:70vh;
+  top:-10vh; left:-10vw;
+  background:radial-gradient(ellipse, rgba(160,0,255,0.85) 0%, transparent 70%);
+  animation:blobA 18s ease-in-out infinite alternate;
+}
+/* Blue blob — drifts right side */
+#bg::after{
+  width:75vw; height:65vh;
+  bottom:-5vh; right:-10vw;
+  background:radial-gradient(ellipse, rgba(0,100,255,0.80) 0%, transparent 70%);
+  animation:blobB 22s ease-in-out infinite alternate;
+}
+/* Pink blob */
+#bg .b1{
+  width:65vw; height:60vh;
+  bottom:-15vh; left:20vw;
+  background:radial-gradient(ellipse, rgba(255,20,120,0.75) 0%, transparent 70%);
+  animation:blobC 25s ease-in-out infinite alternate;
+}
+/* Teal blob */
+#bg .b2{
+  width:55vw; height:50vh;
+  top:5vh; right:5vw;
+  background:radial-gradient(ellipse, rgba(0,220,180,0.65) 0%, transparent 70%);
+  animation:blobD 20s ease-in-out infinite alternate;
+}
+/* Orange blob */
+#bg .b3{
+  width:50vw; height:45vh;
+  bottom:10vh; left:-5vw;
+  background:radial-gradient(ellipse, rgba(255,130,0,0.65) 0%, transparent 70%);
+  animation:blobE 28s ease-in-out infinite alternate;
+}
+/* Yellow accent */
+#bg .b4{
+  width:35vw; height:35vh;
+  top:30vh; left:30vw;
+  background:radial-gradient(ellipse, rgba(255,240,0,0.45) 0%, transparent 70%);
+  animation:blobF 15s ease-in-out infinite alternate;
+}
+
+/* Each blob moves along a different path — looks organic and fractal-like */
+@keyframes blobA{
+  0%  {transform:translate(0,0)      scale(1)    rotate(0deg);}
+  33% {transform:translate(15vw,8vh) scale(1.15) rotate(12deg);}
+  66% {transform:translate(5vw,20vh) scale(0.9)  rotate(-8deg);}
+  100%{transform:translate(20vw,5vh) scale(1.2)  rotate(20deg);}
+}
+@keyframes blobB{
+  0%  {transform:translate(0,0)        scale(1)    rotate(0deg);}
+  40% {transform:translate(-18vw,-10vh) scale(1.2) rotate(-15deg);}
+  70% {transform:translate(-8vw,-20vh) scale(0.85) rotate(10deg);}
+  100%{transform:translate(-22vw,-8vh) scale(1.1)  rotate(-20deg);}
+}
+@keyframes blobC{
+  0%  {transform:translate(0,0)       scale(1)    rotate(0deg);}
+  30% {transform:translate(-10vw,-15vh) scale(1.1) rotate(8deg);}
+  65% {transform:translate(12vw,-8vh) scale(0.9)  rotate(-12deg);}
+  100%{transform:translate(-5vw,-20vh) scale(1.15) rotate(15deg);}
+}
+@keyframes blobD{
+  0%  {transform:translate(0,0)       scale(1)    rotate(0deg);}
+  35% {transform:translate(-12vw,15vh) scale(1.2) rotate(-10deg);}
+  70% {transform:translate(-20vw,5vh) scale(0.88) rotate(14deg);}
+  100%{transform:translate(-15vw,18vh) scale(1.1) rotate(-18deg);}
+}
+@keyframes blobE{
+  0%  {transform:translate(0,0)       scale(1)    rotate(0deg);}
+  45% {transform:translate(18vw,-12vh) scale(1.15) rotate(16deg);}
+  75% {transform:translate(8vw,-18vh) scale(0.92)  rotate(-8deg);}
+  100%{transform:translate(22vw,-6vh) scale(1.2)   rotate(22deg);}
+}
+@keyframes blobF{
+  0%  {transform:translate(0,0)        scale(1)    rotate(0deg);}
+  50% {transform:translate(-8vw,10vh)  scale(1.3)  rotate(-20deg);}
+  100%{transform:translate(10vw,-10vh) scale(0.8)  rotate(25deg);}
 }
 
 #stars{position:fixed;inset:0;z-index:1;pointer-events:none;}
@@ -96,6 +172,18 @@ body{padding:0;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area
   display:block;
   position:relative;z-index:5;
   image-rendering:pixelated;
+  border-radius:6px;
+  box-shadow:
+    0 0 0 1px rgba(0,220,255,0.25),
+    0 0 12px 2px rgba(0,220,255,0.55),
+    0 0 35px 6px rgba(0,180,255,0.30),
+    0 0 70px 14px rgba(160,0,255,0.20);
+  animation:edgeGlow 4s ease-in-out infinite alternate;
+}
+@keyframes edgeGlow{
+  0%  {box-shadow:0 0 0 1px rgba(0,220,255,0.25), 0 0 12px 2px rgba(0,220,255,0.55), 0 0 35px 6px rgba(0,180,255,0.30), 0 0 70px 14px rgba(160,0,255,0.20);}
+  50% {box-shadow:0 0 0 1px rgba(180,0,255,0.30), 0 0 14px 3px rgba(180,0,255,0.60), 0 0 40px 8px rgba(0,180,255,0.25), 0 0 80px 18px rgba(255,20,120,0.18);}
+  100%{box-shadow:0 0 0 1px rgba(0,255,180,0.25), 0 0 12px 2px rgba(0,255,180,0.50), 0 0 30px 6px rgba(0,220,255,0.28), 0 0 65px 12px rgba(0,100,255,0.18);}
 }
 
 /* ── NEXT piece — top-right corner of game, 2× smaller ── */
@@ -187,7 +275,7 @@ body{padding:0;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area
 </style>
 </head>
 <body>
-<div id="bg"></div>
+<div id="bg"><div class="b1"></div><div class="b2"></div><div class="b3"></div><div class="b4"></div></div>
 <canvas id="stars"></canvas>
 <canvas id="particles"></canvas>
 <div id="flash"></div>
@@ -241,22 +329,75 @@ TETRIS</div>
 (function(){
   const c=document.getElementById('stars'),x=c.getContext('2d');
   let S=[];
+
+  function drawFlare(x2,y2,r,a,col){
+    // 4-point star spike flare
+    const spk=r*5;
+    const g=x.createRadialGradient(x2,y2,0,x2,y2,spk);
+    g.addColorStop(0,col.replace(')',`,${a})`).replace('hsl','hsla'));
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    x.save();
+    x.globalAlpha=a*0.9;
+    // horizontal ray
+    x.beginPath();
+    x.moveTo(x2-spk,y2); x.lineTo(x2-r*0.3,y2-r*0.3);
+    x.lineTo(x2,y2-spk*0.35); x.lineTo(x2+r*0.3,y2-r*0.3);
+    x.lineTo(x2+spk,y2); x.lineTo(x2+r*0.3,y2+r*0.3);
+    x.lineTo(x2,y2+spk*0.35); x.lineTo(x2-r*0.3,y2+r*0.3);
+    x.closePath();
+    x.fillStyle=g;
+    x.fill();
+    // diagonal faint rays
+    x.globalAlpha=a*0.35;
+    x.save();x.translate(x2,y2);x.rotate(Math.PI/4);x.translate(-x2,-y2);
+    x.beginPath();
+    x.moveTo(x2-spk*0.6,y2); x.lineTo(x2,y2-spk*0.6); x.lineTo(x2+spk*0.6,y2); x.lineTo(x2,y2+spk*0.6);
+    x.closePath();
+    x.fillStyle=g; x.fill();
+    x.restore();
+    x.restore();
+  }
+
   function rs(){
     c.width=innerWidth;c.height=innerHeight;S=[];
-    for(let i=0;i<320;i++)S.push({
-      x:Math.random()*c.width,y:Math.random()*c.height,
-      r:Math.random()*2+0.1,a:Math.random(),
-      da:(Math.random()-0.5)*0.013,
-      col:`hsl(${190+Math.random()*120},70%,90%)`
-    });
+    for(let i=0;i<320;i++){
+      const r=Math.random()*2+0.1;
+      S.push({
+        x:Math.random()*c.width, y:Math.random()*c.height,
+        r, a:Math.random(),
+        da:(Math.random()-0.5)*0.013,
+        col:`hsl(${190+Math.random()*120},70%,90%)`,
+        // ~20% of stars get a flare; only bigger stars
+        flare: r>1.1 && Math.random()<0.22,
+        // flare pulses at its own speed
+        fPhase: Math.random()*Math.PI*2,
+        fSpeed: 0.018+Math.random()*0.025,
+      });
+    }
   }
+
   function d(){
     x.clearRect(0,0,c.width,c.height);
     S.forEach(s=>{
       s.a=Math.max(0.04,Math.min(1,s.a+s.da));
       if(s.a<=0.04||s.a>=1)s.da*=-1;
-      x.save();x.globalAlpha=s.a;x.fillStyle=s.col;
-      x.shadowColor=s.col;x.shadowBlur=s.r>1.2?4:0;
+
+      // draw flare behind the star dot
+      if(s.flare){
+        s.fPhase+=s.fSpeed;
+        // flare brightness pulses 0..1 with its own sine, only shows when star is bright
+        const fb=Math.max(0,(Math.sin(s.fPhase)*0.5+0.5));
+        if(fb>0.05 && s.a>0.4){
+          drawFlare(s.x,s.y,s.r,fb*s.a*0.85,s.col);
+        }
+      }
+
+      // star dot
+      x.save();
+      x.globalAlpha=s.a;
+      x.fillStyle=s.col;
+      x.shadowColor=s.col;
+      x.shadowBlur=s.r>1.2?6:0;
       x.beginPath();x.arc(s.x,s.y,s.r,0,Math.PI*2);x.fill();
       x.restore();
     });
@@ -264,6 +405,8 @@ TETRIS</div>
   }
   rs();d();window.addEventListener('resize',rs);
 })();
+
+
 
 /* ══ AUDIO ══ */
 let AC=null;
@@ -290,9 +433,61 @@ function sfxRotate(){tone(420,'triangle',0.07,0.09,0,600);}
 function sfxLock(){tone(180,'sawtooth',0.07,0.11);tone(130,'sawtooth',0.1,0.08,0.05);}
 function sfxDrop(){tone(160,'sawtooth',0.1,0.16,0,80);tone(110,'square',0.14,0.1,0.07);}
 function sfxClear(n){
-  const f=[0,500,620,780,1000];
-  for(let i=0;i<=n;i++)tone(f[Math.min(i,4)]+(i*40),'sine',0.2,0.18,i*0.07);
-  if(n>=4)setTimeout(()=>{[800,1000,1300,1600].forEach((f,i)=>tone(f,'sine',0.18,0.2,i*0.06));},300);
+  const a=getAC(); if(!a)return;
+  const now=a.currentTime;
+
+  // Helper: schedule a sine tone with attack/decay envelope
+  function happy(freq,delay,dur,vol,slide){
+    const o=a.createOscillator(), g=a.createGain();
+    o.connect(g); g.connect(a.destination);
+    o.type='sine';
+    o.frequency.setValueAtTime(freq,now+delay);
+    if(slide) o.frequency.exponentialRampToValueAtTime(slide,now+delay+dur*0.7);
+    g.gain.setValueAtTime(0,now+delay);
+    g.gain.linearRampToValueAtTime(vol,now+delay+0.012);
+    g.gain.exponentialRampToValueAtTime(0.001,now+delay+dur);
+    o.start(now+delay); o.stop(now+delay+dur+0.04);
+  }
+
+  // Helper: short percussive shimmer (triangle wave)
+  function shimmer(freq,delay,vol){
+    const o=a.createOscillator(), g=a.createGain();
+    o.connect(g); g.connect(a.destination);
+    o.type='triangle';
+    o.frequency.setValueAtTime(freq,now+delay);
+    o.frequency.exponentialRampToValueAtTime(freq*1.6,now+delay+0.12);
+    g.gain.setValueAtTime(0,now+delay);
+    g.gain.linearRampToValueAtTime(vol,now+delay+0.008);
+    g.gain.exponentialRampToValueAtTime(0.001,now+delay+0.14);
+    o.start(now+delay); o.stop(now+delay+0.18);
+  }
+
+  // Major pentatonic ascending arp — C D E G A  (jolly & musical)
+  const penta = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.5, 1174.66];
+  // Number of notes scales with lines cleared (1→3 notes, 4→7 notes)
+  const noteCount = Math.min(3 + n*1, 7);
+  for(let i=0;i<noteCount;i++){
+    const freq = penta[i];
+    const delay = i*0.072;
+    happy(freq, delay, 0.28, 0.18, freq*2.01);   // main tone with upward slide
+    shimmer(freq*2, delay+0.01, 0.08);             // octave shimmer sparkle
+  }
+
+  // Warm chord stab underneath (root + fifth + octave)
+  happy(261.63, 0,    0.38, 0.10);   // C4 root
+  happy(392.00, 0.01, 0.36, 0.08);   // G4 fifth
+  happy(523.25, 0.02, 0.32, 0.07);   // C5 octave
+
+  // Tetris (4 lines): triumphant extra flourish
+  if(n>=4){
+    const fanfare=[1046.5,1174.66,1318.5,1568,1760];
+    fanfare.forEach((f,i)=>{
+      happy(f, 0.22+i*0.065, 0.30, 0.16, f*1.12);
+      shimmer(f*2, 0.22+i*0.065+0.01, 0.07);
+    });
+    // Final high sparkle burst
+    [2093,2349,2637].forEach((f,i)=>shimmer(f,0.60+i*0.04,0.09));
+  }
 }
 function sfxGameOver(){[380,300,230,170,120].forEach((f,i)=>tone(f,'sawtooth',0.22,0.14,i*0.13));}
 function sfxLevelUp(){[450,550,700,900,1200,1600].forEach((f,i)=>tone(f,'sine',0.18,0.16,i*0.065));}
@@ -364,12 +559,13 @@ function resize(){
   const safeBot=parseInt(getComputedStyle(document.body).paddingBottom)||0;
   const totalH=window.innerHeight - hudH - safeTop - safeBot - 8; // 8px breathing room
   const totalW=window.innerWidth;
-  B=Math.floor(Math.min(totalH/ROWS, totalW/COLS));
-  B=Math.max(18,Math.min(44,B));
+  B=Math.floor(Math.min(totalH/ROWS, totalW/COLS)*0.95);
+  B=Math.max(18,Math.min(41,B));  // 5% smaller (44*0.95≈41)
   gc.width=COLS*B;gc.height=ROWS*B;
   const NB=Math.round(B/2);
   nc.width=4*NB;nc.height=4*NB;
   nc.dataset.nb=NB;
+  resizeNeb();
 }
 window.addEventListener('resize',()=>{resize();draw();});
 
@@ -382,79 +578,140 @@ function rr(ctx,x,y,w,h,r){
   ctx.closePath();
 }
 
+/* ── OFFSCREEN NEBULA CANVAS for refraction ── */
+// We maintain a canvas that mirrors the nebula background so we can
+// sample it with distortion inside each glass block.
+const nebCanvas=document.createElement('canvas');
+const nebCtx=nebCanvas.getContext('2d');
+let nebHue=0; // tracks the CSS animation hue-rotate offset (approx)
+
+function resizeNeb(){
+  const rect=gc.getBoundingClientRect();
+  nebCanvas.width=Math.max(1,Math.round(gc.width));
+  nebCanvas.height=Math.max(1,Math.round(gc.height));
+}
+
+function paintNeb(){
+  const W=nebCanvas.width, H=nebCanvas.height;
+  if(W<1||H<1)return;
+  nebCtx.clearRect(0,0,W,H);
+  nebCtx.fillStyle='#03000f';
+  nebCtx.fillRect(0,0,W,H);
+  // mirror the CSS nebula gradients
+  [
+    [W*0.15, H*0.20, W*0.90, 'rgba(160,0,255,0.85)'],
+    [W*0.88, H*0.72, W*0.80, 'rgba(0,100,255,0.80)'],
+    [W*0.50, H*1.05, W*0.70, 'rgba(255,20,120,0.75)'],
+    [W*0.92, H*0.08, W*0.60, 'rgba(0,230,200,0.70)'],
+    [W*0.03, H*0.82, W*0.50, 'rgba(255,130,0,0.68)'],
+    [W*0.55, H*0.45, W*0.40, 'rgba(255,240,0,0.45)'],
+  ].forEach(([cx,cy,rad,col])=>{
+    const g=nebCtx.createRadialGradient(cx,cy,0,cx,cy,rad);
+    g.addColorStop(0,col); g.addColorStop(1,'transparent');
+    nebCtx.fillStyle=g; nebCtx.fillRect(0,0,W,H);
+  });
+}
+
+function refreshBgSnap(){
+  resizeNeb();
+  paintNeb();
+}
+
 function drawBlock(ctx,gx2,gy2,cid,al=1){
   if(!cid)return;
-  const c=CL[cid],p=1.2,s=B;
+  const c=CL[cid],p=1.5,s=B;
   const x=gx2*s+p,y=gy2*s+p,w=s-p*2,h=s-p*2,r=Math.max(3,w*0.12);
-  const bv=Math.max(3,w*0.18); // bevel thickness
+  const bv=Math.max(3,w*0.18);
 
   ctx.save();
-  rr(ctx,x,y,w,h,r);ctx.clip();
+  rr(ctx,x,y,w,h,r);
+  ctx.clip();
 
-  // frosted glass base
-  const bg=ctx.createLinearGradient(x,y,x+w*0.3,y+h);
-  bg.addColorStop(0,c.h+'bb');
-  bg.addColorStop(0.35,c.m+'99');
-  bg.addColorStop(0.75,c.m+'aa');
-  bg.addColorStop(1,c.d+'cc');
-  ctx.globalAlpha=al;
-  ctx.fillStyle=bg;ctx.fillRect(x,y,w,h);
+  // ── 1. REFRACTED BACKGROUND ──
+  // Sample the nebula canvas with a convex-lens zoom so the background
+  // appears to bend through the glass. Source = same region on nebCanvas,
+  // drawn larger (zoomed) so edges push outward like a real lens.
+  if(nebCanvas.width>1 && ctx===gx){
+    const zoom=1.28;
+    const zw=w*zoom, zh=h*zoom;
+    // source rect on nebCanvas: same position as the block
+    const sx=x, sy=y, sw2=w, sh2=h;
+    // dest rect: expanded around center (lens bulge)
+    const dx=x-(zw-w)*0.5, dy=y-(zh-h)*0.5;
+    ctx.globalAlpha=al*0.55;
+    // drawImage(img, sx,sy,sw,sh, dx,dy,dw,dh)
+    ctx.drawImage(nebCanvas, sx,sy,sw2,sh2, dx,dy,zw,zh);
 
-  // refraction diagonal bands
-  for(let i=0;i<4;i++){
-    const off=i*0.22;
-    const rg=ctx.createLinearGradient(x+w*off,y,x+w*(off+0.18),y+h);
-    rg.addColorStop(0,'rgba(255,255,255,0.0)');
-    rg.addColorStop(0.5,`rgba(255,255,255,${0.06+i*0.01})`);
-    rg.addColorStop(1,'rgba(255,255,255,0.0)');
-    ctx.fillStyle=rg;ctx.fillRect(x,y,w,h);
+    // chromatic aberration — faint R and B fringe at edges
+    const ca=w*0.07;
+    ctx.globalCompositeOperation='screen';
+    ctx.globalAlpha=al*0.18;
+    ctx.drawImage(nebCanvas, sx,sy,sw2,sh2, dx-ca,dy-ca*0.6,zw,zh);
+    ctx.globalAlpha=al*0.14;
+    ctx.drawImage(nebCanvas, sx,sy,sw2,sh2, dx+ca,dy+ca*0.6,zw,zh);
+    ctx.globalCompositeOperation='source-over';
   }
 
-  // ── BEVEL: bright top+left, dark bottom+right ──
-  // top bevel
+  // ── 2. VIBRANT COLOUR TINT ──
+  // Semi-transparent colour wash so each block reads as its hue
+  const tint=ctx.createLinearGradient(x,y,x,y+h);
+  tint.addColorStop(0,   c.h+'ff');
+  tint.addColorStop(0.45,c.m+'ee');
+  tint.addColorStop(0.8, c.m+'ee');
+  tint.addColorStop(1,   c.d+'dd');
+  ctx.globalAlpha=al*0.88;
+  ctx.fillStyle=tint; ctx.fillRect(x,y,w,h);
+
+  // ── 3. SHIMMER BANDS (refraction lines) ──
+  ctx.globalAlpha=al;
+  for(let i=0;i<4;i++){
+    const off=i*0.22;
+    const rg=ctx.createLinearGradient(x+w*off,y,x+w*(off+0.20),y+h);
+    rg.addColorStop(0,'rgba(255,255,255,0.00)');
+    rg.addColorStop(0.5,`rgba(255,255,255,${0.07+i*0.015})`);
+    rg.addColorStop(1,'rgba(255,255,255,0.00)');
+    ctx.fillStyle=rg; ctx.fillRect(x,y,w,h);
+  }
+
+  // ── 4. BEVEL ──
+  ctx.globalAlpha=al;
+  // top
   ctx.beginPath();
-  ctx.moveTo(x,y);ctx.lineTo(x+w,y);
-  ctx.lineTo(x+w-bv,y+bv);ctx.lineTo(x+bv,y+bv);ctx.closePath();
+  ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.lineTo(x+w-bv,y+bv);ctx.lineTo(x+bv,y+bv);ctx.closePath();
   const bt=ctx.createLinearGradient(x,y,x,y+bv);
-  bt.addColorStop(0,'rgba(255,255,255,0.55)');bt.addColorStop(1,'rgba(255,255,255,0.08)');
+  bt.addColorStop(0,'rgba(255,255,255,0.70)');bt.addColorStop(1,'rgba(255,255,255,0.12)');
   ctx.fillStyle=bt;ctx.fill();
-
-  // left bevel
+  // left
   ctx.beginPath();
-  ctx.moveTo(x,y);ctx.lineTo(x,y+h);
-  ctx.lineTo(x+bv,y+h-bv);ctx.lineTo(x+bv,y+bv);ctx.closePath();
+  ctx.moveTo(x,y);ctx.lineTo(x,y+h);ctx.lineTo(x+bv,y+h-bv);ctx.lineTo(x+bv,y+bv);ctx.closePath();
   const bl=ctx.createLinearGradient(x,y,x+bv,y);
-  bl.addColorStop(0,'rgba(255,255,255,0.42)');bl.addColorStop(1,'rgba(255,255,255,0.06)');
+  bl.addColorStop(0,'rgba(255,255,255,0.55)');bl.addColorStop(1,'rgba(255,255,255,0.08)');
   ctx.fillStyle=bl;ctx.fill();
-
-  // bottom bevel
+  // bottom
   ctx.beginPath();
-  ctx.moveTo(x,y+h);ctx.lineTo(x+w,y+h);
-  ctx.lineTo(x+w-bv,y+h-bv);ctx.lineTo(x+bv,y+h-bv);ctx.closePath();
+  ctx.moveTo(x,y+h);ctx.lineTo(x+w,y+h);ctx.lineTo(x+w-bv,y+h-bv);ctx.lineTo(x+bv,y+h-bv);ctx.closePath();
   const bb=ctx.createLinearGradient(x,y+h-bv,x,y+h);
-  bb.addColorStop(0,'rgba(0,0,0,0.08)');bb.addColorStop(1,'rgba(0,0,0,0.46)');
+  bb.addColorStop(0,'rgba(0,0,0,0.05)');bb.addColorStop(1,'rgba(0,0,0,0.55)');
   ctx.fillStyle=bb;ctx.fill();
-
-  // right bevel
+  // right
   ctx.beginPath();
-  ctx.moveTo(x+w,y);ctx.lineTo(x+w,y+h);
-  ctx.lineTo(x+w-bv,y+h-bv);ctx.lineTo(x+w-bv,y+bv);ctx.closePath();
+  ctx.moveTo(x+w,y);ctx.lineTo(x+w,y+h);ctx.lineTo(x+w-bv,y+h-bv);ctx.lineTo(x+w-bv,y+bv);ctx.closePath();
   const br=ctx.createLinearGradient(x+w-bv,y,x+w,y);
-  br.addColorStop(0,'rgba(0,0,0,0.06)');br.addColorStop(1,'rgba(0,0,0,0.40)');
+  br.addColorStop(0,'rgba(0,0,0,0.03)');br.addColorStop(1,'rgba(0,0,0,0.45)');
   ctx.fillStyle=br;ctx.fill();
 
-  // top-left specular gleam
-  const hl=ctx.createRadialGradient(x+w*0.32,y+h*0.2,0,x+w*0.32,y+h*0.2,w*0.55);
-  hl.addColorStop(0,'rgba(255,255,255,0.78)');
-  hl.addColorStop(0.22,'rgba(255,255,255,0.22)');
-  hl.addColorStop(0.6,'rgba(255,255,255,0.04)');
+  // ── 5. TOP-LEFT SPECULAR GLEAM ──
+  const hl=ctx.createRadialGradient(x+w*0.30,y+h*0.18,0,x+w*0.30,y+h*0.18,w*0.55);
+  hl.addColorStop(0,'rgba(255,255,255,0.90)');
+  hl.addColorStop(0.18,'rgba(255,255,255,0.30)');
+  hl.addColorStop(0.55,'rgba(255,255,255,0.05)');
   hl.addColorStop(1,'rgba(255,255,255,0.0)');
-  ctx.fillStyle=hl;ctx.fillRect(x,y,w*0.72,h*0.60);
+  ctx.fillStyle=hl; ctx.fillRect(x,y,w*0.68,h*0.56);
 
-  // colour tint reflection bottom-right
-  const cr=ctx.createRadialGradient(x+w*0.8,y+h*0.85,0,x+w*0.8,y+h*0.85,w*0.5);
-  cr.addColorStop(0,c.h+'1e');cr.addColorStop(1,'rgba(0,0,0,0.0)');
-  ctx.fillStyle=cr;ctx.fillRect(x+w*0.3,y+h*0.4,w*0.7,h*0.6);
+  // ── 6. COLOUR GLOW bottom-right ──
+  const cr=ctx.createRadialGradient(x+w*0.80,y+h*0.84,0,x+w*0.80,y+h*0.84,w*0.50);
+  cr.addColorStop(0,c.h+'cc'); cr.addColorStop(1,'rgba(0,0,0,0.0)');
+  ctx.fillStyle=cr; ctx.fillRect(x+w*0.30,y+h*0.40,w*0.70,h*0.60);
 
   ctx.restore();
 }
@@ -559,10 +816,11 @@ function scorePopup(val,x2,y2){
 /* ── DRAW ── */
 function draw(){
   const W=gc.width,H=gc.height;
+  refreshBgSnap();
   gx.clearRect(0,0,W,H);
 
-  // dark tint so board is readable but nebula glows through
-  gx.fillStyle='rgba(2,0,12,0.50)';
+  // minimal tint — nebula glows through
+  gx.fillStyle='rgba(2,0,12,0.18)';
   gx.fillRect(0,0,W,H);
 
   // grid lines
