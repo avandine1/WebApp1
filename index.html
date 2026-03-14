@@ -113,7 +113,7 @@ body{padding:0;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area
   position:relative;z-index:10;
   width:100%;height:100%;
   display:flex;flex-direction:column;align-items:center;
-  justify-content:flex-start;overflow:hidden;
+  justify-content:flex-end;overflow:hidden;
 }
 
 /* ── HUD bar sits BELOW game canvas ── */
@@ -144,8 +144,8 @@ body{padding:0;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area
 }
 .hud-val{
   font-family:'Orbitron',sans-serif;
-  font-size:13px;font-weight:900;color:#fff;
-  text-shadow:0 0 10px rgba(0,230,255,0.9),0 0 22px rgba(0,230,255,0.4);
+  font-size:20px;font-weight:900;color:#fff;
+  text-shadow:0 0 12px rgba(0,230,255,0.9),0 0 28px rgba(0,230,255,0.4);
 }
 #logo{
   font-family:'Orbitron',sans-serif;
@@ -156,17 +156,17 @@ body{padding:0;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area
   white-space:nowrap;flex-shrink:0;
 }
 #pause-btn{
-  background:rgba(0,0,0,0.45);
+  position:absolute;top:4px;left:4px;z-index:25;
+  background:rgba(0,0,0,0.50);
   border:1px solid rgba(255,255,255,0.18);
   border-radius:8px;
-  padding:4px 11px;
+  padding:5px 10px;
   color:#fff;
-  font-size:14px;
+  font-size:13px;
   line-height:1;
   cursor:pointer;
   backdrop-filter:blur(20px);
   box-shadow:0 1px 8px rgba(0,0,0,0.5);
-  flex-shrink:0;
   transition:background 0.15s,transform 0.1s;
   -webkit-tap-highlight-color:transparent;
 }
@@ -246,7 +246,7 @@ body{padding:0;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area
 
 /* ── LEVEL — top-left corner of game ── */
 #lv-panel{
-  position:absolute;top:4px;left:4px;z-index:20;
+  position:absolute;top:4px;left:46px;z-index:20;
   background:rgba(0,0,0,0.35);
   border:1px solid rgba(255,255,255,0.12);
   border-radius:10px;padding:4px 9px;
@@ -348,7 +348,9 @@ TETRIS</div>
 <div id="app">
   <div id="game-wrap">
     <canvas id="cv"></canvas>
-    <!-- level top-left of game board -->
+    <!-- pause top-left of game board -->
+    <button id="pause-btn">⏸</button>
+    <!-- level — shifted right so pause btn fits -->
     <div id="lv-panel">
       <div class="hud-label">LV</div>
       <div class="hud-val" id="h-level">1</div>
@@ -370,7 +372,6 @@ TETRIS</div>
       <div class="hud-label">Best</div>
       <div class="hud-val" id="h-best">0</div>
     </div>
-    <button id="pause-btn">⏸</button>
   </div>
 </div>
 
