@@ -8,12 +8,10 @@
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
 
   :root {
-    --bg: #010203;
-    --mortar: #050607;
+    --bg: #000205;
     --glow-cyan: #00f5ff;
     --glow-pink: #ff007a;
     --text: #c8f0f5;
-    --btn-bg: rgba(255, 255, 255, 0.08);
   }
 
   * { 
@@ -38,21 +36,21 @@
     position: fixed;
     inset: 0;
     z-index: 1;
-    background: #000408;
+    background: black;
     pointer-events: none;
   }
 
   #nebula-layer {
     position: absolute;
     inset: 0;
-    opacity: 0.6;
-    filter: blur(60px);
+    opacity: 0.7;
+    filter: blur(80px);
   }
 
   #starfield {
     position: absolute;
     inset: 0;
-    opacity: 0.8;
+    opacity: 0.9;
   }
 
   .game-container {
@@ -63,103 +61,52 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: radial-gradient(circle at 50% 50%, rgba(0, 20, 40, 0.2) 0%, rgba(0, 0, 0, 0.7) 100%);
+    background: transparent;
   }
 
   #game-canvas {
     display: block;
-    background: rgba(5, 10, 15, 0.7);
-    max-height: 85%;
-    max-width: 95%;
-    box-shadow: 0 0 100px rgba(0,0,0,0.9);
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+    max-height: 92vh;
+    max-width: 95vw;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 50px rgba(0,0,0,0.9);
     pointer-events: none;
-    backdrop-filter: blur(8px);
-  }
-
-  /* Physical Controls */
-  .controls {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 180px;
-    z-index: 100;
-    display: flex;
-    justify-content: space-between;
-    padding: 0 20px 20px 20px;
-    pointer-events: none;
-  }
-
-  .control-group {
-    display: flex;
-    gap: 15px;
-    pointer-events: auto;
-    align-items: flex-end;
-  }
-
-  .ctrl-btn {
-    width: 65px;
-    height: 65px;
-    background: var(--btn-bg);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 20px;
-    backdrop-filter: blur(5px);
-    transition: transform 0.1s, background 0.1s;
-    user-select: none;
-  }
-
-  .ctrl-btn:active {
-    background: rgba(255, 255, 255, 0.25);
-    transform: scale(0.9);
-  }
-
-  .ctrl-btn.large {
-    width: 75px;
-    height: 75px;
-    background: rgba(0, 245, 255, 0.15);
-    border-color: var(--glow-cyan);
   }
 
   .hud {
     position: absolute;
-    top: 30px;
+    top: 20px;
     z-index: 10;
     pointer-events: none;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
   }
 
-  .hud.left { left: 25px; text-align: left; }
-  .hud.right { right: 25px; text-align: right; }
+  .hud.left { left: 15px; text-align: left; }
+  .hud.right { right: 15px; text-align: right; }
 
   .hud-label {
     font-family: 'Orbitron', sans-serif;
-    font-size: 10px;
+    font-size: 9px;
     color: var(--glow-cyan);
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     text-transform: uppercase;
-    opacity: 0.6;
   }
 
   .hud-value {
     font-family: 'Orbitron', sans-serif;
-    font-size: 24px;
-    font-weight: 900;
+    font-size: 20px;
+    font-weight: 700;
     color: #fff;
-    text-shadow: 0 0 15px var(--glow-cyan);
   }
 
   .overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0,1,3,0.95);
-    backdrop-filter: blur(15px);
+    background: rgba(0,0,0,0.9);
+    backdrop-filter: blur(20px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -167,44 +114,53 @@
     z-index: 200;
     text-align: center;
     padding: 20px;
-    pointer-events: auto;
   }
 
   .overlay h2 {
     font-family: 'Orbitron', sans-serif;
-    font-size: 32px;
+    font-size: 28px;
     color: var(--glow-pink);
-    text-shadow: 0 0 25px var(--glow-pink);
+    text-shadow: 0 0 20px var(--glow-pink);
     margin-bottom: 20px;
-    letter-spacing: 6px;
+    letter-spacing: 4px;
   }
 
   .btn {
     font-family: 'Orbitron', sans-serif;
-    padding: 16px 32px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255,255,255,0.2);
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255,255,255,0.3);
     color: #fff;
     cursor: pointer;
     text-transform: uppercase;
-    letter-spacing: 3px;
     font-weight: bold;
-    transition: all 0.3s;
   }
 
-  .btn:active { background: #fff; color: #000; }
   .hidden { display: none !important; }
 
   #mute-btn {
     position: absolute;
-    top: 25px;
+    top: 20px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 100;
     font-size: 10px;
-    padding: 8px 12px;
-    background: rgba(0,0,0,0.5);
+    padding: 5px 10px;
+    background: rgba(0,0,0,0.3);
     border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+  }
+
+  .hint {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    pointer-events: none;
+    z-index: 5;
+    font-family: 'Orbitron';
   }
 </style>
 </head>
@@ -215,7 +171,7 @@
   <canvas id="starfield"></canvas>
 </div>
 
-<div class="game-container" id="touch-zone">
+<div class="game-container" id="interaction-zone">
   <div class="hud left">
     <div class="hud-label">Score</div>
     <div class="hud-value" id="score-display">0</div>
@@ -228,60 +184,64 @@
 
   <canvas id="game-canvas"></canvas>
 
-  <button id="mute-btn" class="btn">♪ ON</button>
+  <div class="hint">TAP SIDE TO MOVE • SWIPE DOWN TO DROP • SPACE TO HARD DROP</div>
 
-  <div class="controls">
-    <div class="control-group">
-      <div class="ctrl-btn" id="btn-left">←</div>
-      <div class="ctrl-btn" id="btn-right">→</div>
-      <div class="ctrl-btn" id="btn-down">↓</div>
-    </div>
-    <div class="control-group">
-      <div class="ctrl-btn large" id="btn-rotate">↻</div>
-      <div class="ctrl-btn" id="btn-drop">⤓</div>
-    </div>
-  </div>
+  <button id="mute-btn">♪ ON</button>
 
   <div class="overlay" id="start-screen">
     <h2>GLASS BRICKS</h2>
-    <p style="margin-bottom: 30px; color: #889; font-size: 11px; letter-spacing: 2px;">REFINED OPTICS EDITION</p>
-    <button class="btn" id="start-btn">ENGAGE</button>
+    <button class="btn" id="start-btn">START ENGINE</button>
   </div>
 
   <div class="overlay hidden" id="gameover-screen">
-    <h2>WALL COMPLETE</h2>
-    <div id="final-score" style="font-size: 24px; margin-bottom:25px; font-family: 'Orbitron'; color: #fff;">0</div>
-    <button class="btn" id="restart-btn">REBUILD</button>
+    <h2>CORE DEPLETED</h2>
+    <div id="final-score" style="font-size: 20px; margin-bottom:20px; color: #fff;">0</div>
+    <button class="btn" id="restart-btn">RESTART</button>
   </div>
 </div>
 
 <script>
 const COLS = 10, ROWS = 20;
 let block_size;
-const COLORS = { 
-    I:'#32e6ff', 
-    O:'#ffcc00', 
-    T:'#d455ff', 
-    S:'#b2ff4d', 
-    Z:'#ff3b3b', 
-    J:'#1a8cff', 
-    L:'#ff8533' 
+
+const VIBRANT_COLORS = {
+  I: ['#00ffff', '#0099ff'], 
+  O: ['#ffff00', '#ffaa00'], 
+  T: ['#ff66ff', '#aa00ff'], 
+  S: ['#ccff00', '#00ff66'], 
+  Z: ['#ff4d4d', '#cc0000'], 
+  J: ['#3399ff', '#0044ff'], 
+  L: ['#ff9933', '#ff4400']  
 };
+
 const PIECES = {
   I:[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]], O:[[1,1],[1,1]], T:[[0,1,0],[1,1,1],[0,0,0]],
   S:[[0,1,1],[1,1,0],[0,0,0]], Z:[[1,1,0],[0,1,1],[0,0,0]], J:[[1,0,0],[1,1,1],[0,0,0]], L:[[0,0,1],[1,1,1],[0,0,0]]
 };
+
+// Canvas Setup for Background - Declared early to avoid ReferenceErrors
+const nCanvas = document.getElementById('nebula-layer');
+const nCtx = nCanvas.getContext('2d');
+const sCanvas = document.getElementById('starfield');
+const sCtx = sCanvas.getContext('2d');
+
+let stars = [], clouds = [];
 
 let board = Array.from({length: ROWS}, () => Array(COLS).fill(null));
 let current, score = 0, level = 1, lines = 0, gameRunning = false, dropTimer = 0, lastTime = 0;
 const canvas = document.getElementById('game-canvas'), ctx = canvas.getContext('2d');
 
 function resizeCanvas() {
-    const availableHeight = window.innerHeight * 0.70;
-    const availableWidth = window.innerWidth * 0.90;
+    const availableHeight = window.innerHeight * 0.92;
+    const availableWidth = window.innerWidth * 0.95;
     block_size = Math.floor(Math.min(availableWidth / COLS, availableHeight / ROWS));
     canvas.width = COLS * block_size;
     canvas.height = ROWS * block_size;
+    
+    // Safety check for background init during early resize triggers
+    if (nCanvas && sCanvas) {
+      initBackground();
+    }
 }
 
 window.addEventListener('resize', resizeCanvas);
@@ -293,17 +253,15 @@ function spawn() {
   const types = Object.keys(PIECES);
   const type = types[Math.floor(Math.random() * types.length)];
   current = {
-    type,
-    matrix: PIECES[type].map(r => [...r]),
-    x: Math.floor(COLS/2) - (type === 'O' ? 1 : 2),
-    y: 0,
-    seed: Math.random() * 1000
+    type, matrix: PIECES[type].map(r => [...r]),
+    x: Math.floor(COLS/2) - (type === 'O' ? 1 : 2), y: 0, 
+    seed: Math.random() * 5000,
+    rot: 0
   };
   if (!isValid(current)) endGame();
 }
 
 function isValid(p, dx=0, dy=0, m=p.matrix) {
-  if (!p) return false;
   return m.every((row, i) => row.every((v, j) => {
     if (!v) return true;
     let nx = p.x + j + dx, ny = p.y + i + dy;
@@ -311,7 +269,15 @@ function isValid(p, dx=0, dy=0, m=p.matrix) {
   }));
 }
 
-function rotate(m) { return m[0].map((_, i) => m.map(r => r[i]).reverse()); }
+function rotate() {
+  if (!current) return;
+  const m = current.matrix[0].map((_, i) => current.matrix.map(r => r[i]).reverse());
+  if (isValid(current, 0, 0, m)) {
+    current.matrix = m;
+    current.rot += 1;
+    sfx('move');
+  }
+}
 
 function move(dx, dy) {
   if (current && isValid(current, dx, dy)) {
@@ -322,20 +288,21 @@ function move(dx, dy) {
   return false;
 }
 
-function getGhostPosition() {
-    if(!current) return 0;
-    let ghostY = current.y;
-    while (isValid(current, 0, ghostY - current.y + 1)) { ghostY++; }
-    return ghostY;
+function hardDrop() {
+  if (!current) return;
+  while (move(0, 1)) { /* keep moving down */ }
+  drop();
 }
 
 function drop() {
   if (!move(0, 1)) {
     if (current) {
       current.matrix.forEach((row, i) => row.forEach((v, j) => {
-        if (v && current.y + i >= 0) {
-            board[current.y + i][current.x + j] = { type: current.type, seed: current.seed + (i*j) };
-        }
+        if (v && current.y + i >= 0) board[current.y + i][current.x + j] = { 
+          type: current.type, 
+          seed: current.seed + (i*j),
+          rot: current.rot
+        };
       }));
     }
     sfx('land');
@@ -344,10 +311,13 @@ function drop() {
   }
 }
 
-function hardDrop() {
-    if (!current) return;
-    while (move(0, 1));
-    drop();
+function getGhostPosition() {
+  if (!current) return 0;
+  let ghostY = current.y;
+  while (isValid(current, 0, ghostY - current.y + 1)) {
+    ghostY++;
+  }
+  return ghostY;
 }
 
 function clearLines() {
@@ -372,17 +342,15 @@ function updateUI() {
 }
 
 function draw() {
-  if (!ctx) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   
-  ctx.fillStyle = 'rgba(5, 10, 20, 0.4)';
-  ctx.fillRect(0,0,canvas.width, canvas.height);
+  // Board backdrop for blurring
+  ctx.fillStyle = 'rgba(0, 5, 10, 0.25)';
+  ctx.fillRect(0,0, canvas.width, canvas.height);
 
-  if (board) {
-    board.forEach((row, y) => {
-      row?.forEach((v, x) => { if (v) drawGlassBrick(x, y, v.type, false, v.seed); });
-    });
-  }
+  board.forEach((row, y) => row.forEach((v, x) => { 
+    if (v) drawGlassBrick(x, y, v.type, false, v.seed); 
+  }));
   
   if (current) {
     const ghostY = getGhostPosition();
@@ -396,42 +364,61 @@ function draw() {
   }
 }
 
-function drawGlassBrick(x, y, type, isGhost = false, seed = 0) {
-  const baseColor = COLORS[type];
+function drawGlassBrick(x, y, type, isGhost, seed) {
+  const [c1, c2] = VIBRANT_COLORS[type];
   const px = x * block_size, py = y * block_size;
-  const gap = 2, size = block_size - gap;
+  const size = block_size - 1;
 
   ctx.save();
-  ctx.translate(px + gap/2, py + gap/2);
-  ctx.beginPath(); ctx.rect(0, 0, size, size); ctx.clip();
+  ctx.translate(px, py);
 
-  if (isGhost) ctx.globalAlpha = 0.15;
+  if (isGhost) {
+    ctx.strokeStyle = c1;
+    ctx.globalAlpha = 0.3;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(3, 3, size - 6, size - 6);
+  } else {
+    ctx.beginPath();
+    ctx.roundRect(1, 1, size - 1, size - 1, 3);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.fill();
 
-  // Background
-  const tX = (Math.sin(seed * 0.7) * 0.4 + 0.5) * size;
-  const tY = (Math.cos(seed * 1.3) * 0.4 + 0.5) * size;
-  const bgGrad = ctx.createRadialGradient(tX, tY, size * 0.1, size/2, size/2, size * 1.5);
-  bgGrad.addColorStop(0, baseColor); 
-  bgGrad.addColorStop(0.5, baseColor);
-  bgGrad.addColorStop(1, '#000'); 
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(0, 0, size, size);
+    const time = Date.now() * 0.0008; 
+    
+    const offsetX = (Math.sin(seed + time) * 0.4 + Math.cos(seed * 1.5 + time * 1.2) * 0.2) * size;
+    const offsetY = (Math.cos(seed + time * 0.7) * 0.4 + Math.sin(seed * 0.8 + time * 1.1) * 0.2) * size;
+    
+    const grad = ctx.createRadialGradient(
+      size/2 + offsetX, size/2 + offsetY, 0,
+      size/2, size/2, size * 1.1
+    );
+    grad.addColorStop(0, c1);
+    grad.addColorStop(0.5, c2);
+    grad.addColorStop(1, 'rgba(0,0,0,0.6)');
+    
+    ctx.globalAlpha = 0.85; 
+    ctx.fillStyle = grad;
+    ctx.fill();
 
-  // Shine from top-left
-  const edgeShine = ctx.createLinearGradient(0, 0, size, size);
-  edgeShine.addColorStop(0, 'rgba(255,255,255,0.95)');
-  edgeShine.addColorStop(0.1, 'rgba(255,255,255,0.4)');
-  edgeShine.addColorStop(0.4, 'rgba(255,255,255,0)');
-  ctx.fillStyle = edgeShine;
-  ctx.fillRect(1, 1, size-2, 1.5); 
-  ctx.fillRect(1, 1, 1.5, size-2); 
+    ctx.globalAlpha = 1;
+    const edgeGrad = ctx.createLinearGradient(0, 0, size, size);
+    edgeGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+    edgeGrad.addColorStop(0.2, 'rgba(255, 255, 255, 0.3)');
+    edgeGrad.addColorStop(0.8, 'rgba(0, 0, 0, 0.2)');
+    edgeGrad.addColorStop(1, 'rgba(255, 255, 255, 0.6)');
+    
+    ctx.strokeStyle = edgeGrad;
+    ctx.lineWidth = 1;
+    ctx.stroke();
 
-  // Inner Bevels
-  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-  ctx.strokeRect(3, 3, size-6, size-6);
-  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-  ctx.strokeRect(size-3, size-3, -size+6, -size+6);
-
+    ctx.beginPath();
+    ctx.moveTo(size * 0.15, size * 0.15);
+    ctx.lineTo(size * 0.45, size * 0.15);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
@@ -447,8 +434,7 @@ function gameLoop(ts) {
 function startGame() {
   board = initBoard(); score = 0; level = 1; lines = 0;
   gameRunning = true;
-  document.getElementById('start-screen').classList.add('hidden');
-  document.getElementById('gameover-screen').classList.add('hidden');
+  document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
   updateUI(); spawn();
   lastTime = performance.now();
   requestAnimationFrame(gameLoop);
@@ -456,110 +442,163 @@ function startGame() {
 
 function endGame() {
   gameRunning = false;
-  document.getElementById('final-score').textContent = "SCORE: " + score;
+  document.getElementById('final-score').textContent = "FINAL SCORE: " + score;
   document.getElementById('gameover-screen').classList.remove('hidden');
 }
 
+// Interaction
+let touchStart = null, touchStartTime = 0;
+let lastTapTime = 0;
+const interactionZone = document.getElementById('interaction-zone');
+
+interactionZone.addEventListener('touchstart', e => {
+  const t = e.touches[0];
+  touchStart = { x: t.clientX, y: t.clientY };
+  touchStartTime = Date.now();
+  const now = Date.now();
+  if (now - lastTapTime < 300) { rotate(); lastTapTime = 0; } 
+  else { lastTapTime = now; }
+}, {passive: false});
+
+interactionZone.addEventListener('touchend', e => {
+  if (!touchStart || !gameRunning) return;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - touchStart.x;
+  const dy = t.clientY - touchStart.y;
+  if (Math.abs(dx) > 30 || Math.abs(dy) > 30) {
+    if (Math.abs(dx) > Math.abs(dy)) { move(dx > 0 ? 1 : -1, 0); } 
+    else if (dy > 30) { hardDrop(); }
+  } else {
+    const screenWidth = window.innerWidth;
+    if (t.clientX < screenWidth / 2) { move(-1, 0); } else { move(1, 0); }
+  }
+  touchStart = null;
+}, {passive: false});
+
+function initBackground() {
+  if (!nCanvas || !sCanvas) return;
+  nCanvas.width = sCanvas.width = window.innerWidth;
+  nCanvas.height = sCanvas.height = window.innerHeight;
+  
+  stars = Array.from({length: 150}, () => ({
+    x: (Math.random() - 0.5) * sCanvas.width,
+    y: (Math.random() - 0.5) * sCanvas.height,
+    z: Math.random() * sCanvas.width,
+    pz: 0,
+    brightness: 0.5 + Math.random() * 0.5
+  }));
+
+  clouds = Array.from({length: 8}, () => ({
+    x: Math.random() * nCanvas.width, y: Math.random() * nCanvas.height,
+    r: Math.random() * 500 + 300, 
+    c: [`rgba(0,100,255,0.4)`, `rgba(180,0,180,0.3)`, `rgba(0,200,150,0.3)`][Math.floor(Math.random()*3)],
+    vx: (Math.random()-0.5) * 0.2, vy: (Math.random()-0.5) * 0.2
+  }));
+}
+
+function animateBackground() {
+  sCtx.fillStyle = "black";
+  sCtx.fillRect(0, 0, sCanvas.width, sCanvas.height);
+  
+  const centerX = sCanvas.width / 2;
+  const centerY = sCanvas.height / 2;
+  const gameRect = canvas.getBoundingClientRect();
+
+  stars.forEach(s => {
+    s.pz = s.z;
+    s.z -= 4; // Forward speed
+    if (s.z <= 1) {
+      s.z = sCanvas.width;
+      s.x = (Math.random() - 0.5) * sCanvas.width;
+      s.y = (Math.random() - 0.5) * sCanvas.height;
+      s.pz = s.z;
+    }
+
+    // Projection
+    const sx = (s.x / s.z) * centerX + centerX;
+    const sy = (s.y / s.z) * centerY + centerY;
+    const px = (s.x / s.pz) * centerX + centerX;
+    const py = (s.y / s.pz) * centerY + centerY;
+
+    const size = (1 - s.z / sCanvas.width) * 3;
+    const isUnderBoard = (sx > gameRect.left && sx < gameRect.right && sy > gameRect.top && sy < gameRect.bottom);
+
+    sCtx.beginPath();
+    if (isUnderBoard) {
+      // Frosted/Blurred Star under board
+      sCtx.globalAlpha = 0.2;
+      sCtx.strokeStyle = "white";
+      sCtx.lineWidth = size * 3;
+    } else {
+      // Vibrant Star with Trail
+      sCtx.globalAlpha = s.brightness;
+      sCtx.strokeStyle = `rgba(255, 255, 255, ${s.brightness})`;
+      sCtx.lineWidth = size;
+      
+      // Subtle Glow for brighter stars
+      if (s.brightness > 0.8) {
+        sCtx.shadowBlur = 8;
+        sCtx.shadowColor = "white";
+      }
+    }
+
+    sCtx.moveTo(px, py);
+    sCtx.lineTo(sx, sy);
+    sCtx.stroke();
+    sCtx.shadowBlur = 0; // Reset
+    sCtx.globalAlpha = 1.0;
+  });
+
+  nCtx.clearRect(0, 0, nCanvas.width, nCanvas.height);
+  nCtx.globalCompositeOperation = 'screen';
+  clouds.forEach(c => {
+    c.x += c.vx; c.y += c.vy;
+    if(c.x < -c.r) c.x = nCanvas.width + c.r;
+    if(c.x > nCanvas.width + c.r) c.x = -c.r;
+    const g = nCtx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
+    g.addColorStop(0, c.c); g.addColorStop(1, 'transparent');
+    nCtx.fillStyle = g;
+    nCtx.beginPath(); nCtx.arc(c.x, c.y, c.r, 0, Math.PI*2); nCtx.fill();
+  });
+  
+  requestAnimationFrame(animateBackground);
+}
+
+// Audio
 let audioCtx, muted = false;
 function sfx(type) {
   if (muted || !audioCtx) return;
   const o = audioCtx.createOscillator(), g = audioCtx.createGain();
   o.connect(g); g.connect(audioCtx.destination);
-  if (type === 'move') { o.frequency.value = 240; g.gain.value = 0.02; o.start(); o.stop(audioCtx.currentTime+0.04); }
-  if (type === 'land') { o.frequency.value = 120; g.gain.value = 0.04; o.start(); o.stop(audioCtx.currentTime+0.08); }
-  if (type === 'clear') { o.frequency.value = 520; g.gain.value = 0.06; o.start(); o.stop(audioCtx.currentTime+0.15); }
+  o.frequency.value = type === 'move' ? 200 : type === 'clear' ? 600 : 100;
+  g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+  o.start(); o.stop(audioCtx.currentTime + 0.1);
 }
 
-// Button Events
-const bindBtn = (id, fn) => {
-  const el = document.getElementById(id);
-  const handler = (e) => { e.preventDefault(); if(gameRunning) fn(); };
-  el.addEventListener('touchstart', handler, {passive: false});
-  el.addEventListener('mousedown', handler);
+document.getElementById('start-btn').onclick = () => {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  startGame();
+};
+document.getElementById('restart-btn').onclick = startGame;
+document.getElementById('mute-btn').onclick = (e) => {
+  muted = !muted;
+  e.target.textContent = muted ? '♪ OFF' : '♪ ON';
 };
 
-bindBtn('btn-left', () => move(-1, 0));
-bindBtn('btn-right', () => move(1, 0));
-bindBtn('btn-down', () => drop());
-bindBtn('btn-rotate', () => { 
-  if(!current) return;
-  const m = rotate(current.matrix); 
-  if (isValid(current,0,0,m)) { current.matrix = m; sfx('move'); }
-});
-bindBtn('btn-drop', () => hardDrop());
-
 document.addEventListener('keydown', e => {
-  if (!gameRunning || !current) return;
+  if (!gameRunning) return;
   if (e.key === 'ArrowLeft') move(-1, 0);
   if (e.key === 'ArrowRight') move(1, 0);
   if (e.key === 'ArrowDown') drop();
-  if (e.key === 'ArrowUp') { const m = rotate(current.matrix); if (isValid(current,0,0,m)) { current.matrix = m; sfx('move'); } }
-  if (e.key === ' ') hardDrop();
+  if (e.key === 'ArrowUp') rotate();
+  if (e.key === ' ') { e.preventDefault(); hardDrop(); }
 });
 
-const startBtn = document.getElementById('start-btn');
-const restartBtn = document.getElementById('restart-btn');
-const muteBtn = document.getElementById('mute-btn');
-
-startBtn.onclick = () => {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  startGame();
+window.onload = function() {
+  initBackground();
+  animateBackground();
 };
-restartBtn.onclick = startGame;
-muteBtn.onclick = () => {
-  muted = !muted;
-  muteBtn.textContent = muted ? '♪ OFF' : '♪ ON';
-};
-
-// BACKGROUND FIX
-const nCanvas = document.getElementById('nebula-layer');
-const nCtx = nCanvas.getContext('2d');
-const sCanvas = document.getElementById('starfield');
-const sCtx = sCanvas.getContext('2d');
-
-let stars = [], nebulas = [];
-
-function initBackground() {
-  nCanvas.width = sCanvas.width = window.innerWidth;
-  nCanvas.height = sCanvas.height = window.innerHeight;
-  
-  stars = [];
-  for(let i=0; i<150; i++) {
-    stars.push({ x: Math.random() * nCanvas.width, y: Math.random() * nCanvas.height, size: Math.random() * 1.5, speed: Math.random() * 0.05 + 0.01, op: Math.random() });
-  }
-
-  nebulas = [];
-  const colors = ['#003366', '#330066', '#006644', '#660022'];
-  for(let i=0; i<8; i++) {
-    nebulas.push({ x: Math.random() * nCanvas.width, y: Math.random() * nCanvas.height, r: Math.random() * 400 + 300, color: colors[i % colors.length] });
-  }
-}
-
-function drawNebulas() {
-  nCtx.clearRect(0, 0, nCanvas.width, nCanvas.height);
-  nebulas.forEach(n => {
-    const g = nCtx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
-    g.addColorStop(0, n.color);
-    g.addColorStop(1, 'transparent');
-    nCtx.fillStyle = g;
-    nCtx.beginPath(); nCtx.arc(n.x, n.y, n.r, 0, Math.PI * 2); nCtx.fill();
-  });
-}
-
-function animateBackground() {
-  sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
-  stars.forEach(s => {
-    s.y += s.speed; if (s.y > sCanvas.height) s.y = 0;
-    s.op += (Math.random() - 0.5) * 0.02;
-    sCtx.fillStyle = `rgba(255, 255, 255, ${Math.max(0.2, Math.min(0.8, s.op))})`;
-    sCtx.beginPath(); sCtx.arc(s.x, s.y, s.size, 0, Math.PI * 2); sCtx.fill();
-  });
-  requestAnimationFrame(animateBackground);
-}
-
-window.addEventListener('resize', () => { initBackground(); drawNebulas(); });
-initBackground(); drawNebulas(); animateBackground();
-draw();
 </script>
 </body>
 </html>
