@@ -37,6 +37,7 @@ body{padding:0;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area
   position:relative;z-index:10;
   width:100%;height:100%;
   display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-start;overflow:hidden;
 }
 
 /* ── compact HUD bar sits flush above the game canvas ── */
@@ -85,9 +86,9 @@ body{padding:0;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area
 
 #game-wrap{
   position:relative;
-  flex:1;
-  display:flex;align-items:center;justify-content:center;
-  width:100%;overflow:hidden;
+  flex:0 0 auto;
+  display:flex;align-items:flex-start;justify-content:center;
+  width:100%;overflow:visible;
 }
 
 /* The main game canvas is transparent — nebula shows through! */
@@ -357,12 +358,16 @@ const gc=document.getElementById('cv'),gx=gc.getContext('2d');
 const nc=document.getElementById('ncv'),nx=nc.getContext('2d');
 
 function resize(){
-  const wrap=document.getElementById('game-wrap');
-  const avH=wrap.clientHeight, avW=wrap.clientWidth;
-  B=Math.floor(Math.min(avH/ROWS, avW/COLS));
-  B=Math.max(22,Math.min(52,B));
+  const hud=document.getElementById('hud');
+  const hudH=hud.offsetHeight||40;
+  const safeTop=parseInt(getComputedStyle(document.body).paddingTop)||0;
+  const safeBot=parseInt(getComputedStyle(document.body).paddingBottom)||0;
+  const totalH=window.innerHeight - hudH - safeTop - safeBot - 8; // 8px breathing room
+  const totalW=window.innerWidth;
+  B=Math.floor(Math.min(totalH/ROWS, totalW/COLS));
+  B=Math.max(18,Math.min(44,B));
   gc.width=COLS*B;gc.height=ROWS*B;
-  const NB=Math.round(B/2); // next piece canvas uses half-size blocks
+  const NB=Math.round(B/2);
   nc.width=4*NB;nc.height=4*NB;
   nc.dataset.nb=NB;
 }
@@ -712,7 +717,7 @@ document.addEventListener('mouseup',e=>{
   ms=null;
 });
 
-resize();draw();
+requestAnimationFrame(()=>{resize();draw();});
 </script>
 </body>
 </html>
