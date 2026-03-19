@@ -325,7 +325,7 @@ body{padding:0;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area
 
 <div id="overlay">
   <div class="ov-box">
-    <div class="ov-title" id="ov-title">GLASS
+    <div class="ov-title" id="ov-title">SPACE
 TETRIS</div>
     <div class="ov-sub" id="ov-sub">COSMIC EDITION</div>
     <div class="ov-score" id="ov-score" style="display:none"></div>
@@ -367,7 +367,7 @@ TETRIS</div>
       <div class="hud-label">Score</div>
       <div class="hud-val" id="h-score">0</div>
     </div>
-    <div id="logo">TETRIS</div>
+    <div id="logo">SPACE TETRIS</div>
     <div class="hud-box">
       <div class="hud-label">Best</div>
       <div class="hud-val" id="h-best">0</div>
@@ -382,7 +382,7 @@ const isMobile=/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 (function(){
   const c=document.getElementById('stars'), ctx=c.getContext('2d');
   let W,H,CX,CY,S=[];
-  const COUNT=140, SPEED=5;
+  const COUNT=140, SPEED=2.5;
 
   function mkStar(aged){
     // aged=true: spawn far away; aged=false: full random z
